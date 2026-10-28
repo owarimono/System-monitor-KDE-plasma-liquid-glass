@@ -334,7 +334,7 @@ Item {
                     visible: cfg.showCpuGraph
                     Layout.fillWidth: true
                     Layout.preferredHeight: Kirigami.Units.gridUnit * view.graphHeight
-                    radius: 12
+                    radius: 10
                     color: colors.controlFill
                     border.width: 1
                     border.color: colors.separator
@@ -711,6 +711,7 @@ Item {
                     model: hub.gpus
 
                     delegate: ColumnLayout {
+                        id: gpuBlock
                         required property int index
                         required property var modelData
                         // NOTE: ids are not reachable through other ids in
@@ -759,7 +760,7 @@ Item {
                         MacBar {
                             Layout.fillWidth: true
                             Layout.preferredHeight: 8
-                            level: parent.parent.level
+                            level: gpuBlock.level
                             fillColor: colors.accent
                             trackColor: colors.controlFill
                             trackBorderColor: colors.separator

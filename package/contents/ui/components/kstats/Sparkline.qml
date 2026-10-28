@@ -206,5 +206,20 @@ Canvas {
         ctx.globalAlpha = 0.9;
         trace();
         ctx.stroke();
+
+        // Current-value dot at the newest sample — the macOS graph
+        // signature: a glowing core over a soft halo.
+        var endX = plotLeft + plotWidth - 2;
+        var endY = plotTop + 1
+                 + (plotHeight - 2) * (1 - Math.min(1, series[series.length - 1] / ceiling));
+        ctx.globalAlpha = 0.30;
+        ctx.fillStyle = lineColor;
+        ctx.beginPath();
+        ctx.arc(endX - 1, endY, 5, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.beginPath();
+        ctx.arc(endX - 1, endY, 2.6, 0, 2 * Math.PI);
+        ctx.fill();
     }
 }
