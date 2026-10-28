@@ -7,6 +7,10 @@
 //   - valueSlot reserves width for a representative value string (KStats'
 //     fixed-slot trick) so longer formatted rates do not elide, and
 //     meterWidth (0 = automatic) lets host cards widen the meter.
+//   - stretch mode: the row fills the host width and the meter flexes —
+//     KStats pinned every width for its compact dropdown columns, which
+//     misaligned rows in a full-width card.
+//   - fixedLabelWidth aligns the label column across sibling rows.
 //   - Meter colors (track fill, border) are exposed as properties so the
 //     glass card can theme them from its own palette.
 
@@ -31,9 +35,13 @@ RowLayout {
     property string previewMode: "sparkline"
     property string valueSlot: showMeter ? "100.0%" : value
     property real meterWidth: 0
+    property bool stretch: false
+    property real fixedLabelWidth: 0
     property int labelPixelSize: 0
     property int valuePixelSize: 0
-    readonly property real labelWidth: Math.max(labelText.implicitWidth, stat.label.length <= 1 ? Kirigami.Units.gridUnit * 0.7 : Kirigami.Units.gridUnit * 1.25)
+    readonly property real labelWidth: fixedLabelWidth > 0
+        ? fixedLabelWidth
+        : Math.max(labelText.implicitWidth, stat.label.length <= 1 ? Kirigami.Units.gridUnit * 0.7 : Kirigami.Units.gridUnit * 1.25)
     readonly property real valueWidth: showMeter ? valueMetrics.width + 1 : Kirigami.Units.gridUnit * 3
     readonly property real autoMeterWidth: previewMode === "bar" ? Kirigami.Units.gridUnit * 0.85 : Kirigami.Units.gridUnit * 2.2
     readonly property real previewWidth: showMeter
@@ -43,9 +51,10 @@ RowLayout {
 
     spacing: Math.max(1, Kirigami.Units.smallSpacing / 4)
     Layout.alignment: Qt.AlignVCenter
-    Layout.minimumWidth: fixedWidth
-    Layout.preferredWidth: fixedWidth
-    Layout.maximumWidth: fixedWidth
+    Layout.fillWidth: stat.stretch
+    Layout.minimumWidth: stat.stretch ? 0 : fixedWidth
+    Layout.preferredWidth: stat.stretch ? -1 : fixedWidth
+    Layout.maximumWidth: stat.stretch ? Infinity : fixedWidth
     implicitWidth: fixedWidth
 
     TextMetrics {
@@ -72,9 +81,10 @@ RowLayout {
     Rectangle {
         visible: stat.showMeter
         clip: true
-        Layout.minimumWidth: stat.previewWidth
-        Layout.preferredWidth: stat.previewWidth
-        Layout.maximumWidth: stat.previewWidth
+        Layout.fillWidth: stat.stretch
+        Layout.minimumWidth: stat.stretch ? 0 : stat.previewWidth
+        Layout.preferredWidth: stat.stretch ? -1 : stat.previewWidth
+        Layout.maximumWidth: stat.stretch ? Infinity : stat.previewWidth
         Layout.preferredHeight: Math.max(Kirigami.Units.gridUnit * 0.9, stat.height - Kirigami.Units.smallSpacing)
         radius: 2
         color: stat.meterColor

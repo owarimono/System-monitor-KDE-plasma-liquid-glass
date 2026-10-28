@@ -1,9 +1,14 @@
 // Adapted from KStats — https://github.com/oowl/kstats
 // MIT License — Copyright (c) 2026 Jun Ouyang (see LICENSES/KStats-MIT.txt)
-// Modifications for System Monitor (Glass): the center percent label is
-// built without i18nc so the component also loads outside the plasmoid
-// QML context (percent figures need no translation); value easing is done
-// by the caller; colors are overridden through the existing properties.
+// Modifications for System Monitor (Glass):
+//   - the center percent label is built without i18nc so the component
+//     also loads outside the plasmoid QML context (percent figures need
+//     no translation)
+//   - center text scales with the ring size — KStats used fixed theme
+//     font sizes that overflowed smaller rings
+//   - the drawn value eases toward the target (600ms, OutCubic) so the
+//     gauge motion feels like Apple's rings; colors are overridden
+//     through the existing properties.
 
 import QtQuick
 import QtQuick.Controls as Controls
@@ -21,10 +26,21 @@ Item {
     property color subLabelColor: Kirigami.Theme.disabledTextColor
     property real lineWidth: Math.max(5, Math.min(width, height) * 0.11)
 
+    property real shown: 0
+    Behavior on shown {
+        NumberAnimation { duration: 600; easing.type: Easing.OutCubic }
+    }
+    onValueChanged: root.shown = root.clamped()
+    Component.onCompleted: root.shown = root.clamped()
+
+    function clamped() {
+        return Math.max(0, Math.min(100, root.value))
+    }
+
     implicitWidth: Kirigami.Units.gridUnit * 5
     implicitHeight: implicitWidth
 
-    onValueChanged: canvas.requestPaint()
+    onShownChanged: canvas.requestPaint()
     onAccentColorChanged: canvas.requestPaint()
     onTrackColorChanged: canvas.requestPaint()
     onWidthChanged: canvas.requestPaint()
@@ -49,7 +65,7 @@ Item {
             var centerY = height / 2;
             var radius = Math.max(1, (size - root.lineWidth) / 2 - 1);
             var startAngle = -Math.PI / 2;
-            var endAngle = startAngle + Math.PI * 2 * Math.max(0, Math.min(100, root.value)) / 100;
+            var endAngle = startAngle + Math.PI * 2 * Math.max(0, Math.min(100, root.shown)) / 100;
 
             ctx.lineWidth = root.lineWidth;
             ctx.lineCap = "round";
@@ -73,9 +89,9 @@ Item {
 
         Controls.Label {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: Math.round(Math.max(0, Math.min(100, root.value))) + "%"
+            text: Math.round(root.shown) + "%"
             color: root.labelColor
-            font.pixelSize: Kirigami.Theme.defaultFont.pixelSize * 1.25
+            font.pixelSize: Math.max(11, root.width * 0.21)
             font.weight: Font.DemiBold
         }
 
@@ -84,7 +100,8 @@ Item {
             visible: root.label.length > 0
             text: root.label
             color: root.subLabelColor
-            font.pixelSize: Math.max(9, Kirigami.Theme.smallFont.pixelSize - 1)
+            font.pixelSize: Math.max(8, root.width * 0.13)
+            font.weight: Font.Medium
         }
     }
 }

@@ -37,6 +37,12 @@ Item {
     readonly property color netUpColor: colors.orange
     readonly property color gpuColor: "#ff375f"
 
+    // Backdrop for the mini meters: dark like KStats' original so the
+    // colored lines stay readable on any glass tint.
+    readonly property color meterBackdrop: colors.isLight
+        ? Qt.rgba(0, 0, 0, 0.82)
+        : Qt.rgba(0, 0, 0, 0.5)
+
     // Dynamic ceilings for the network sparklines (bytes/s history).
     readonly property real netDownMax: netPeak(hub.downHistory)
     readonly property real netUpMax: netPeak(hub.upHistory)
@@ -79,21 +85,27 @@ Item {
         realtimeRefraction: cfg.realtimeRefraction
     }
 
+    // Auto-height card: sizes to its content, so rows can never spill out.
     component StatCard: Rectangle {
         default property alias content: cardLayout.data
         property string caption: ""
 
         Layout.fillWidth: true
-        radius: Kirigami.Units.cornerRadius
+        radius: 10
         color: colors.controlFill
         border.width: 1
         border.color: colors.separator
+        implicitHeight: cardLayout.implicitHeight
+                         + cardLayout.anchors.topMargin
+                         + cardLayout.anchors.bottomMargin
 
         ColumnLayout {
             id: cardLayout
-            anchors.fill: parent
-            anchors.margins: Kirigami.Units.smallSpacing
-            spacing: Kirigami.Units.smallSpacing
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.margins: 12
+            spacing: 8
 
             Text {
                 visible: caption !== ""
@@ -112,7 +124,7 @@ Item {
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.margins: 18
-        spacing: 14
+        spacing: 12
 
         // ── Header ────────────────────────────────────────────────────
         RowLayout {
@@ -146,19 +158,16 @@ Item {
         ColumnLayout {
             visible: cfg.showCpu
             Layout.fillWidth: true
-            spacing: Kirigami.Units.smallSpacing
+            spacing: 10
 
             StatCard {
-                implicitHeight: Kirigami.Units.gridUnit * 4.4
-
                 RowLayout {
                     Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    spacing: Kirigami.Units.smallSpacing * 2
+                    spacing: 14
 
                     KStats.RingGauge {
-                        Layout.preferredWidth: Kirigami.Units.gridUnit * 3.6
-                        Layout.preferredHeight: Kirigami.Units.gridUnit * 3.6
+                        Layout.preferredWidth: Kirigami.Units.gridUnit * 4
+                        Layout.preferredHeight: Kirigami.Units.gridUnit * 4
                         value: hub.num(hub.cpuUsage.value)
                         label: i18n("CPU")
                         accentColor: view.cpuColor
@@ -169,7 +178,7 @@ Item {
 
                     ColumnLayout {
                         Layout.fillWidth: true
-                        spacing: 4
+                        spacing: 6
 
                         Text {
                             visible: hub.cpuFreqAvailable
@@ -208,12 +217,11 @@ Item {
 
             StatCard {
                 visible: cfg.showCpuGraph
-                implicitHeight: Kirigami.Units.gridUnit * 4.6
                 caption: i18n("Usage history")
 
                 KStats.Sparkline {
                     Layout.fillWidth: true
-                    Layout.fillHeight: true
+                    Layout.preferredHeight: Kirigami.Units.gridUnit * 3
                     samples: hub.cpuHistory
                     autoSample: false
                     maxValue: 100
@@ -226,68 +234,68 @@ Item {
                 }
             }
 
-            KStats.CpuCoreBars {
+            StatCard {
                 visible: cfg.showPerCore && hub.coreCount > 0
-                count: hub.coreCount
-                sensorAt: hub.coreSensorAt
-                refreshInterval: Math.max(1000, hub.updateInterval)
-                barColor: view.cpuColor
-                trackColor: colors.foreground
-                gridColor: colors.labelTertiary
+                caption: i18n("Cores")
+
+                KStats.CpuCoreBars {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: Kirigami.Units.gridUnit * 2.8
+                    count: hub.coreCount
+                    sensorAt: hub.coreSensorAt
+                    refreshInterval: Math.max(1000, hub.updateInterval)
+                    barColor: view.cpuColor
+                    trackColor: colors.foreground
+                    gridColor: colors.labelTertiary
+                }
             }
         }
 
         // ── Memory ────────────────────────────────────────────────────
-        ColumnLayout {
+        StatCard {
             visible: cfg.showMemory
-            Layout.fillWidth: true
-            spacing: Kirigami.Units.smallSpacing
+            caption: i18n("Memory")
 
-            StatCard {
-                implicitHeight: Kirigami.Units.gridUnit * 4.4
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 14
 
-                RowLayout {
+                KStats.RingGauge {
+                    Layout.preferredWidth: Kirigami.Units.gridUnit * 4
+                    Layout.preferredHeight: Kirigami.Units.gridUnit * 4
+                    value: hub.memLevel * 100
+                    label: i18n("RAM")
+                    accentColor: view.memoryColor
+                    trackColor: colors.controlFill
+                    labelColor: colors.foreground
+                    subLabelColor: colors.labelTertiary
+                }
+
+                ColumnLayout {
                     Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    spacing: Kirigami.Units.smallSpacing * 2
+                    spacing: 6
 
-                    KStats.RingGauge {
-                        Layout.preferredWidth: Kirigami.Units.gridUnit * 3.6
-                        Layout.preferredHeight: Kirigami.Units.gridUnit * 3.6
-                        value: hub.memLevel * 100
-                        label: i18n("RAM")
-                        accentColor: view.memoryColor
-                        trackColor: colors.controlFill
-                        labelColor: colors.foreground
-                        subLabelColor: colors.labelTertiary
+                    KStats.DetailRow {
+                        label: i18n("Used")
+                        value: String(hub.memUsed.formattedValue ?? "")
+                        labelColor: colors.labelTertiary
+                        valueColor: colors.foreground
                     }
 
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        spacing: 4
+                    KStats.DetailRow {
+                        label: i18n("Total")
+                        value: String(hub.memTotal.formattedValue ?? "")
+                        labelColor: colors.labelTertiary
+                        valueColor: colors.foreground
+                    }
 
-                        KStats.DetailRow {
-                            label: i18n("Used")
-                            value: String(hub.memUsed.formattedValue ?? "")
-                            labelColor: colors.labelTertiary
-                            valueColor: colors.foreground
-                        }
-
-                        KStats.DetailRow {
-                            label: i18n("Total")
-                            value: String(hub.memTotal.formattedValue ?? "")
-                            labelColor: colors.labelTertiary
-                            valueColor: colors.foreground
-                        }
-
-                        KStats.DetailRow {
-                            visible: hub.swapActive
-                            label: i18n("Swap")
-                            value: String(hub.swapUsed.formattedValue ?? "") + " / "
-                                   + String(hub.swapTotal.formattedValue ?? "")
-                            labelColor: colors.labelTertiary
-                            valueColor: colors.foreground
-                        }
+                    KStats.DetailRow {
+                        visible: hub.swapActive
+                        label: i18n("Swap")
+                        value: String(hub.swapUsed.formattedValue ?? "") + " / "
+                               + String(hub.swapTotal.formattedValue ?? "")
+                        labelColor: colors.labelTertiary
+                        valueColor: colors.foreground
                     }
                 }
             }
@@ -297,52 +305,47 @@ Item {
         ColumnLayout {
             visible: cfg.showNetwork
             Layout.fillWidth: true
-            spacing: Kirigami.Units.smallSpacing
+            spacing: 10
 
             StatCard {
-                implicitHeight: Kirigami.Units.gridUnit * 3.4
-
-                ColumnLayout {
+                KStats.BarStat {
                     Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    spacing: Kirigami.Units.smallSpacing
+                    label: i18n("Down")
+                    value: String(hub.netDown.formattedValue ?? "")
+                    valueSlot: "888.8 MiB/s"
+                    percent: view.netDownMax > 0
+                             ? hub.num(hub.netDown.value) / view.netDownMax * 100 : 0
+                    stretch: true
+                    fixedLabelWidth: Kirigami.Units.gridUnit * 2.2
+                    accentColor: view.netDownColor
+                    valueColor: colors.foreground
+                    meterColor: view.meterBackdrop
+                    meterBorderColor: colors.separator
+                }
 
-                    KStats.BarStat {
-                        label: i18n("Down")
-                        value: String(hub.netDown.formattedValue ?? "")
-                        valueSlot: "888.8 MiB/s"
-                        percent: view.netDownMax > 0
-                                 ? hub.num(hub.netDown.value) / view.netDownMax * 100 : 0
-                        meterWidth: Kirigami.Units.gridUnit * 3.2
-                        accentColor: view.netDownColor
-                        valueColor: colors.foreground
-                        meterColor: colors.controlFill
-                        meterBorderColor: colors.separator
-                    }
-
-                    KStats.BarStat {
-                        label: i18n("Up")
-                        value: String(hub.netUp.formattedValue ?? "")
-                        valueSlot: "888.8 KiB/s"
-                        percent: view.netUpMax > 0
-                                 ? hub.num(hub.netUp.value) / view.netUpMax * 100 : 0
-                        meterWidth: Kirigami.Units.gridUnit * 3.2
-                        accentColor: view.netUpColor
-                        valueColor: colors.foreground
-                        meterColor: colors.controlFill
-                        meterBorderColor: colors.separator
-                    }
+                KStats.BarStat {
+                    Layout.fillWidth: true
+                    label: i18n("Up")
+                    value: String(hub.netUp.formattedValue ?? "")
+                    valueSlot: "888.8 KiB/s"
+                    percent: view.netUpMax > 0
+                             ? hub.num(hub.netUp.value) / view.netUpMax * 100 : 0
+                    stretch: true
+                    fixedLabelWidth: Kirigami.Units.gridUnit * 2.2
+                    accentColor: view.netUpColor
+                    valueColor: colors.foreground
+                    meterColor: view.meterBackdrop
+                    meterBorderColor: colors.separator
                 }
             }
 
             StatCard {
                 visible: cfg.showNetGraph
-                implicitHeight: Kirigami.Units.gridUnit * 4.6
                 caption: i18n("Download history")
 
                 KStats.Sparkline {
                     Layout.fillWidth: true
-                    Layout.fillHeight: true
+                    Layout.preferredHeight: Kirigami.Units.gridUnit * 3
                     samples: hub.downHistory
                     autoSample: false
                     maxValue: view.netDownMax
@@ -356,43 +359,35 @@ Item {
         // ── Disk ──────────────────────────────────────────────────────
         StatCard {
             visible: cfg.showDisk
-            Layout.fillWidth: true
-            implicitHeight: Kirigami.Units.gridUnit * 3.6
 
-            ColumnLayout {
+            KStats.BarStat {
                 Layout.fillWidth: true
-                Layout.fillHeight: true
-                spacing: Kirigami.Units.smallSpacing
+                label: i18n("Disk")
+                value: String(hub.diskUsed.formattedValue ?? "") + " / "
+                       + String(hub.diskTotal.formattedValue ?? "")
+                valueSlot: "888.8 GiB / 888.8 GiB"
+                percent: hub.num(hub.diskUsedPercent.value)
+                previewMode: "bar"
+                stretch: true
+                fixedLabelWidth: Kirigami.Units.gridUnit * 2.2
+                accentColor: colors.levelColor(hub.num(hub.diskUsedPercent.value) / 100)
+                valueColor: colors.foreground
+                meterColor: view.meterBackdrop
+                meterBorderColor: colors.separator
+            }
 
-                KStats.BarStat {
-                    label: i18n("Disk")
-                    value: String(hub.diskUsed.formattedValue ?? "") + " / "
-                           + String(hub.diskTotal.formattedValue ?? "")
-                    valueSlot: "888.8 GiB / 888.8 GiB"
-                    percent: hub.num(hub.diskUsedPercent.value)
-                    previewMode: "bar"
-                    meterWidth: Kirigami.Units.gridUnit * 7
-                    accentColor: colors.levelColor(hub.num(hub.diskUsedPercent.value) / 100)
-                    valueColor: colors.foreground
-                    meterColor: colors.controlFill
-                    meterBorderColor: colors.separator
-                }
-
-                KStats.DetailRow {
-                    label: i18n("Read / Write")
-                    value: String(hub.diskRead.formattedValue ?? "") + "  /  "
-                           + String(hub.diskWrite.formattedValue ?? "")
-                    labelColor: colors.labelTertiary
-                    valueColor: colors.foreground
-                }
+            KStats.DetailRow {
+                label: i18n("Read / Write")
+                value: String(hub.diskRead.formattedValue ?? "") + "  /  "
+                       + String(hub.diskWrite.formattedValue ?? "")
+                labelColor: colors.labelTertiary
+                valueColor: colors.foreground
             }
         }
 
         // ── GPU ───────────────────────────────────────────────────────
         StatCard {
             visible: view.showGpu
-            Layout.fillWidth: true
-            implicitHeight: Kirigami.Units.gridUnit * 2.6
 
             KStats.BarStat {
                 Layout.fillWidth: true
@@ -402,10 +397,11 @@ Item {
                 valueSlot: "888.8 GiB / 888.8 GiB"
                 percent: hub.num(hub.gpuUsage.value)
                 previewMode: "bar"
-                meterWidth: Kirigami.Units.gridUnit * 7
+                stretch: true
+                fixedLabelWidth: Kirigami.Units.gridUnit * 2.2
                 accentColor: view.gpuColor
                 valueColor: colors.foreground
-                meterColor: colors.controlFill
+                meterColor: view.meterBackdrop
                 meterBorderColor: colors.separator
             }
         }
