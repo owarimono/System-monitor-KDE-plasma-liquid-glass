@@ -88,6 +88,7 @@ Item {
         property string caption: ""
         text: caption
         color: colors.labelTertiary
+        font.family: "Inter"
         font.pixelSize: 10
         font.weight: Font.DemiBold
         font.letterSpacing: 0.8
@@ -107,8 +108,8 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
-        anchors.margins: 22
-        spacing: 14
+        anchors.margins: 24
+        spacing: 16
 
         // ── Header ────────────────────────────────────────────────────
         RowLayout {
@@ -125,7 +126,8 @@ Item {
             Text {
                 text: i18n("System Monitor")
                 color: colors.foreground
-                font.pixelSize: 15
+                font.family: "Inter"
+                font.pixelSize: 16
                 font.weight: Font.DemiBold
                 Layout.fillWidth: true
             }
@@ -134,6 +136,7 @@ Item {
                 visible: String(hub.hostname.value ?? "") !== ""
                 text: String(hub.hostname.value ?? "")
                 color: colors.labelTertiary
+                font.family: "Inter"
                 font.pixelSize: 11
             }
         }
@@ -163,7 +166,8 @@ Item {
                     visible: hub.cpuFreqAvailable
                     text: String(hub.cpuFreq.formattedValue ?? "")
                     color: colors.foreground
-                    font.pixelSize: 16
+                    font.family: "Inter"
+                    font.pixelSize: 17
                     font.weight: Font.DemiBold
                     font.features: { "tnum": 1 }
                 }
@@ -172,6 +176,7 @@ Item {
                     visible: hub.cpuFreqAvailable
                     text: i18n("Average frequency")
                     color: colors.labelTertiary
+                    font.family: "Inter"
                     font.pixelSize: 11
                 }
 

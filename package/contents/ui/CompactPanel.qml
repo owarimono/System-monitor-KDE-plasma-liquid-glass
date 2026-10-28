@@ -74,6 +74,7 @@ Item {
         Text {
             text: Math.max(0, Math.min(100, Math.round(hub.num(hub.cpuUsage.value)))) + "%"
             color: colors.foreground
+            font.family: "Inter"
             font.pixelSize: 12
             font.weight: Font.DemiBold
         }
