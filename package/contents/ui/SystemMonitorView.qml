@@ -418,7 +418,7 @@ Item {
 
                     KStats.Sparkline {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: compact ? 14 : 18
+                        Layout.preferredHeight: compact ? 10 : 12
                         smoothing: 6
                         samples: hub.downHistory
                         autoSample: false
@@ -450,7 +450,7 @@ Item {
 
                     KStats.Sparkline {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: compact ? 14 : 18
+                        Layout.preferredHeight: compact ? 10 : 12
                         smoothing: 6
                         samples: hub.upHistory
                         autoSample: false
@@ -471,7 +471,7 @@ Item {
                 KStats.Sparkline {
                     visible: cfg.showNetGraph
                     Layout.fillWidth: true
-                    Layout.preferredHeight: Kirigami.Units.gridUnit * (compact ? 1.8 : 2.2)
+                    Layout.preferredHeight: Kirigami.Units.gridUnit * (compact ? 1.3 : 1.7)
                     smoothing: 6
                     samples: hub.downHistory
                     autoSample: false
