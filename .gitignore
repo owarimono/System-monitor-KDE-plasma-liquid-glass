@@ -1,0 +1,19 @@
+# Build artifacts
+*.plasmoid
+build/
+dist/
+
+# Compiled shaders are intentionally committed (see build-shaders.sh),
+# but keep intermediate/compiler droppings out
+*.qsb.tmp
+
+# Editors / IDEs
+.vscode/
+.idea/
+*.kate-swp
+*.swp
+*~
+
+# OS noise
+.DS_Store
+Thumbs.db

@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build & package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Qt shader tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends qt6-shadertools zip
+
+      - name: Compile shaders
+        run: ./build-shaders.sh
+
+      - name: Validate metadata
+        run: |
+          python3 - <<'EOF'
+          import json, pathlib
+          meta = json.loads(pathlib.Path("package/metadata.json").read_text())
+          assert meta["KPackageStructure"] == "Plasma/Applet", "bad KPackageStructure"
+          for key in ("Id", "Name", "Version", "License", "Description", "Icon"):
+              assert meta["KPlugin"].get(key), f"KPlugin.{key} missing"
+          assert meta.get("X-Plasma-API-Minimum-Version"), "minimum API version missing"
+          print("metadata OK:", meta["KPlugin"]["Id"], "v" + meta["KPlugin"]["Version"])
+          EOF
+
+      - name: Validate KConfig schema
+        run: |
+          python3 - <<'EOF'
+          import xml.etree.ElementTree as ET
+          tree = ET.parse("package/contents/config/main.xml")
+          entries = tree.findall(".//entry")
+          assert entries, "main.xml has no entries"
+          names = {e.get("name") for e in entries}
+          assert all(names), "entry without name found"
+          print("config schema OK:", len(entries), "entries")
+          EOF
+
+      - name: Build .plasmoid bundle
+        run: ./package.sh
+
+      - name: Upload bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: plasmoid-bundle
+          path: dist/*.plasmoid
+          if-no-files-found: error
