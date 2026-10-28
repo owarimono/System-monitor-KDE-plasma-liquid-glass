@@ -197,6 +197,14 @@ Item {
         Math.max(1, Math.round(glass.width / 2)),
         Math.max(1, Math.round(glass.height / 2)))
 
+    // Adaptive blur resolution: a small blur radius rendered at half
+    // resolution then upscaled shows visible pixel blocks, so radii under
+    // 16px blur at full resolution; larger radii keep the cheap half-res
+    // chain (their softness hides the upscale).
+    readonly property size blurSize: blurRadius >= 16 ? _halfSize
+        : Qt.size(Math.max(1, glass.width), Math.max(1, glass.height))
+    readonly property real blurTexelScale: blurSize.width / Math.max(1, glass.width)
+
     ShaderEffect {
         id: cropPass
         anchors.fill: parent
@@ -215,8 +223,8 @@ Item {
         live: glass._chainLive
         hideSource: true
         smooth: true
-        // Blur at half resolution: doubles effective reach, halves cost.
-        textureSize: glass.blurActive ? glass._halfSize
+        // Blur at adaptive resolution (see blurSize).
+        textureSize: glass.blurActive ? glass.blurSize
                                       : Qt.size(Math.max(1, glass.width),
                                                 Math.max(1, glass.height))
     }
@@ -229,9 +237,9 @@ Item {
         fragmentShader: Qt.resolvedUrl("shaders/blur.frag.qsb")
         property variant uSource: cropTex
         property vector2d uDirection: Qt.vector2d(1, 0)
-        property real uRadius: glass.blurRadius * 0.5
-        property vector2d uTexel: Qt.vector2d(1.0 / glass._halfSize.width,
-                                              1.0 / glass._halfSize.height)
+        property real uRadius: glass.blurRadius * glass.blurTexelScale
+        property vector2d uTexel: Qt.vector2d(1.0 / glass.blurSize.width,
+                                              1.0 / glass.blurSize.height)
     }
 
     ShaderEffectSource {
@@ -242,7 +250,7 @@ Item {
         live: glass._chainLive
         hideSource: true
         smooth: true
-        textureSize: glass._halfSize
+        textureSize: glass.blurSize
     }
 
     ShaderEffect {
@@ -252,9 +260,9 @@ Item {
         fragmentShader: Qt.resolvedUrl("shaders/blur.frag.qsb")
         property variant uSource: blurHTex
         property vector2d uDirection: Qt.vector2d(0, 1)
-        property real uRadius: glass.blurRadius * 0.5
-        property vector2d uTexel: Qt.vector2d(1.0 / glass._halfSize.width,
-                                              1.0 / glass._halfSize.height)
+        property real uRadius: glass.blurRadius * glass.blurTexelScale
+        property vector2d uTexel: Qt.vector2d(1.0 / glass.blurSize.width,
+                                              1.0 / glass.blurSize.height)
     }
 
     ShaderEffectSource {
@@ -265,7 +273,7 @@ Item {
         live: glass._chainLive
         hideSource: true
         smooth: true
-        textureSize: glass._halfSize
+        textureSize: glass.blurSize
     }
 
     // Tiny opaque texture so the glass pass has something bound in solid
@@ -314,7 +322,7 @@ Item {
         property real uStroke: glass.specular ? glass.edgeStroke : 0.0
         property vector2d uMouse: Qt.vector2d(glass._mouseU, glass._mouseV)
         property real uMouseFade: glass._mouseFade
-        property real uNoise: 0.006
+        property real uNoise: 0.012
     }
 
     // ── Fallback (panels, plasmoidviewer) ─────────────────────────────

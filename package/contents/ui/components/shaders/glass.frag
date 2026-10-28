@@ -64,6 +64,21 @@ float hash12(vec2 p)
     return fract((p3.x + p3.y) * p3.z);
 }
 
+// Deband sampling: average the backdrop over a small cross whose
+// orientation is randomized per pixel (mpv-style deband, light). This
+// melts 8-bit banding steps in the blur without a heavier pass.
+vec3 backdropSample(vec2 uv)
+{
+    vec3 c = texture(uBackdrop, uv).rgb;
+    float ang = hash12(gl_FragCoord.xy) * 6.2831853;
+    vec2 o = vec2(cos(ang), sin(ang)) * (1.5 / uSize);
+    c += texture(uBackdrop, uv + o).rgb;
+    c += texture(uBackdrop, uv - o).rgb;
+    c += texture(uBackdrop, uv + o.yx).rgb;
+    c += texture(uBackdrop, uv - o.yx).rgb;
+    return c * 0.2;
+}
+
 void main()
 {
     vec2 halfSize = uSize * 0.5;
@@ -87,11 +102,11 @@ void main()
         vec2 uvR = baseUV + n * (refractPx * (1.0 + uChroma)) / uSize;
         vec2 uvG = baseUV + n * refractPx / uSize;
         vec2 uvB = baseUV + n * (refractPx * (1.0 - uChroma)) / uSize;
-        col = vec3(texture(uBackdrop, uvR).r,
-                   texture(uBackdrop, uvG).g,
-                   texture(uBackdrop, uvB).b);
+        col = vec3(backdropSample(uvR).r,
+                   backdropSample(uvG).g,
+                   backdropSample(uvB).b);
     } else {
-        col = texture(uBackdrop, baseUV + n * refractPx / uSize).rgb;
+        col = backdropSample(baseUV + n * refractPx / uSize).rgb;
     }
 
     // --- tint + vibrancy -------------------------------------------------
@@ -128,7 +143,12 @@ void main()
 
     // --- grounding shade + dithering -------------------------------------
     col *= mix(1.0, 0.94, smoothstep(0.55, 1.0, qt_TexCoord0.y));
-    col += (hash12(gl_FragCoord.xy) - 0.5) * uNoise;
+    // Triangle-distributed dithering: two uniform hashes summed give a
+    // triangle PDF, which hides 8-bit banding far better than uniform
+    // noise of the same amplitude.
+    float dither = hash12(gl_FragCoord.xy)
+                 + hash12(gl_FragCoord.xy + 17.17) - 1.0;
+    col += dither * uNoise;
 
     float alpha = mask * qt_Opacity;
     fragColor = vec4(col * alpha, alpha);

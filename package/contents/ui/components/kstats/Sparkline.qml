@@ -20,6 +20,7 @@ Canvas {
     property int sampleLimit: 36
     property var samples: []
     property bool autoSample: true
+    property int smoothing: 3                 // display MA half-width; 1 = off
     property real maxValue: 100
     property color lineColor: "white"
     property bool showFill: false
@@ -131,12 +132,15 @@ Canvas {
         // one-sample traffic bursts into rounded hills (the stored series
         // itself is untouched). Cheap: three reads per point per paint.
         function smoothed() {
+            var r = Math.max(1, Math.min(6, root.smoothing >> 1) | 0);
             var out = new Array(samples.length);
             for (var i = 0; i < samples.length; i++) {
-                var sum = samples[i];
-                var n = 1;
-                if (i > 0) { sum += samples[i - 1]; n++ }
-                if (i < samples.length - 1) { sum += samples[i + 1]; n++ }
+                var sum = 0;
+                var n = 0;
+                for (var k = Math.max(0, i - r); k <= Math.min(samples.length - 1, i + r); k++) {
+                    sum += samples[k];
+                    n++;
+                }
                 out[i] = sum / n;
             }
             return out;
