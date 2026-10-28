@@ -241,6 +241,7 @@ Item {
                     Layout.fillWidth: true
                     count: hub.coreCount
                     sensorAt: hub.coreSensorAt
+                    revision: hub.coreRevision
                     fillColor: colors.accent
                     trackColor: colors.controlFill
                     labelColor: colors.labelTertiary

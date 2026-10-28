@@ -48,6 +48,12 @@ Item {
     }
     readonly property int coreCount: Math.max(0, Math.min(256, hub.num(cpuCoreCount.value)))
 
+    // Delegates materialize in componentComplete — after bindings that
+    // call objectAt() during construction — so a revision counter gives
+    // late bindings (CoreTiles tiles) a re-run trigger once the per-core
+    // sensors actually exist.
+    property int coreRevision: 0
+
     Instantiator {
         id: coreInstantiator
         model: hub.coreCount
@@ -55,6 +61,7 @@ Item {
             required property int index
             sensorId: "cpu/cpu" + index + "/usage"
             updateRateLimit: hub.updateInterval
+            onStatusChanged: hub.coreRevision++
         }
     }
 

@@ -48,6 +48,12 @@ and the project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- Per-core tiles were permanently empty: the Instantiator materializes
+  its sensors in componentComplete, after bindings that call objectAt()
+  during construction, leaving those bindings stuck on null with no
+  re-run trigger. A core revision counter (bumped on sensor readiness)
+  now re-arms the tile bindings, and fills use a perceptual sqrt scale
+  with a 4px minimum so near-idle cores stay visible.
 - Removed the diagonal top sheen that read as a white stain over the
   host card; the glass instead gains a luminosity lift (brightness +
   saturation) so dark wallpapers glow through the material.
