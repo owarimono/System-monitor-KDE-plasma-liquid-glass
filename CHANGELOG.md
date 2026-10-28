@@ -46,6 +46,13 @@ and the project adheres to [Semantic Versioning](https://semver.org/).
   `valueSlot`/`meterWidth` extensions for wider value strings and meters
   (upstream adaptations, documented in the file headers).
 
+### Changed
+
+- The widget now floats with a macOS-style soft drop shadow (MultiEffect
+  renders a blurred copy of the glass silhouette behind it).
+- The edge treatment is soft and even — the previous hard directional
+  specular drew a bright streak along the top edge.
+
 ### Fixed
 
 - Per-core tiles were permanently empty: the Instantiator materializes

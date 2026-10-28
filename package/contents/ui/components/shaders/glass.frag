@@ -103,19 +103,20 @@ void main()
     col = clamp(col * 1.10 + 0.015, 0.0, 1.0);   // glass luminosity
     col = mix(col, uTint.rgb, uTint.a);
 
-    // --- specular border -------------------------------------------------
-    // Key light straight from the top, secondary catch from the upper-left.
+    // --- specular border + inner stroke ----------------------------------
+    // macOS edges are soft and even: a faint ambient rim with only a
+    // slight bias toward the top, no hard directional highlight.
     float topFacing    = clamp(-n.y, 0.0, 1.0);
     float leftFacing   = clamp(dot(n, normalize(vec2(-0.7, -0.7))), 0.0, 1.0);
     float bottomFacing = clamp(n.y, 0.0, 1.0);
     float rim          = band * band;
-    float spec = rim * uSpec * (0.62 * topFacing + 0.26 * leftFacing + 0.10 * bottomFacing);
+    float spec = rim * uSpec * (0.28 + 0.14 * topFacing + 0.06 * leftFacing + 0.04 * bottomFacing);
     col += spec;
 
-    // Apple-style inner edge stroke hugging the whole silhouette.
+    // Soft uniform inner outline hugging the whole silhouette.
     float strokeBand = 1.0 - smoothstep(0.0, 1.6, fs);
-    float stroke = strokeBand * (0.42 * topFacing + 0.20 * leftFacing + 0.08 * bottomFacing + 0.06);
-    col += stroke * uStroke;
+    float stroke = strokeBand * uStroke * (0.14 + 0.06 * topFacing + 0.03 * leftFacing + 0.02 * bottomFacing);
+    col += stroke;
 
     // --- mouse-following sheen -------------------------------------------
     if (uMouseFade > 0.0 && uMouse.x >= 0.0) {

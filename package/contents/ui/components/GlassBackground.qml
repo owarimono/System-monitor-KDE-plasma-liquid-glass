@@ -35,8 +35,8 @@ Item {
     property real refractionStrength: 26    // max rim displacement, px
     property real chromaStrength: 0.08      // chromatic aberration, 0..1
     property bool specular: true
-    property real specStrength: 0.9
-    property real edgeStroke: 1.0           // Apple-style inner outline, 0..1
+    property real specStrength: 0.6         // soft even ambient rim
+    property real edgeStroke: 0.8           // soft uniform inner outline, 0..1
     property bool realtimeRefraction: false
 
     // ── Solid panel mode (no wallpaper sampling) ──────────────────────

@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Effects
 import org.kde.plasma.plasmoid
 import org.kde.kirigami as Kirigami
 import "components"
@@ -72,7 +73,21 @@ Item {
     Layout.maximumHeight: 1300
     clip: true
 
+    // macOS-style floating drop shadow: MultiEffect renders a blurred
+    // copy of the glass silhouette behind it; the copy sits exactly under
+    // the real glass, so only the soft shadow ring is ever visible.
+    MultiEffect {
+        anchors.fill: glassBg
+        source: glassBg
+        shadowEnabled: true
+        shadowBlur: 0.9
+        shadowColor: Qt.rgba(0, 0, 0, 0.45)
+        shadowVerticalOffset: 12
+        autoPaddingEnabled: true
+    }
+
     GlassBackground {
+        id: glassBg
         anchors.fill: parent
         radius: cfg.cornerRadius
 
