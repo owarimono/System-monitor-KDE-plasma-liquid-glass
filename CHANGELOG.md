@@ -102,6 +102,12 @@ and the project adheres to [Semantic Versioning](https://semver.org/).
   gone, as is the unused BarStat component.
 - Sparkline fills fade out by 80% height with a 1px inset and clipped
   canvases, killing the colored smear that leaked past the card edge.
+- Sparkline geometry fix: sample spacing was derived from the buffer
+  limit (36) instead of the actual series length (60), pushing the curve
+  and fill past the left edge of the plot; spacing now follows the real
+  series length and the area polygon closes on the correct side.
+- Sparkline draws with a centered 3-sample moving average, turning
+  one-sample traffic bursts into rounded hills (stored data untouched).
 - Per-core tiles keep a 3px sliver near idle and a shorter, lighter
   track.
 - GPU cards show a small temperature readout next to each usage

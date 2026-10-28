@@ -82,7 +82,11 @@ Canvas {
         var plotTop = showScale ? 2 : 0;
         var plotWidth = Math.max(1, width - plotLeft);
         var plotHeight = Math.max(1, height - (showScale ? 4 : 0));
-        var step = plotWidth / Math.max(1, sampleLimit - 1);
+        // Space samples by the ACTUAL series length — sampleLimit only
+        // governs the autoSample buffer, and host-provided series (rolling
+        // histories) are frequently longer, which used to push points past
+        // the left edge and smear the fill outside the plot.
+        var step = plotWidth / Math.max(1, samples.length - 1);
 
         if (showGrid || showScale) {
             ctx.lineWidth = 1;
@@ -120,20 +124,35 @@ Canvas {
         }
 
         // Smooth the series with quadratic midpoints, then fade the fill
-        // through a vertical gradient.
-        function trace() {
-            ctx.beginPath();
-            var lastX = plotLeft + plotWidth - (samples.length - 1) * step;
-            var lastY = plotTop + plotHeight - (samples[0] / ceiling * plotHeight);
-            ctx.moveTo(lastX, lastY);
+        // through a vertical gradient. Points run oldest (left) to newest
+        // (right).
+        //
+        // Display smoothing: a centered 3-sample moving average tames
+        // one-sample traffic bursts into rounded hills (the stored series
+        // itself is untouched). Cheap: three reads per point per paint.
+        function smoothed() {
+            var out = new Array(samples.length);
             for (var i = 0; i < samples.length; i++) {
-                var x = plotLeft + plotWidth - (samples.length - 1 - i) * step;
-                var y = plotTop + plotHeight - (samples[i] / ceiling * plotHeight);
+                var sum = samples[i];
+                var n = 1;
+                if (i > 0) { sum += samples[i - 1]; n++ }
+                if (i < samples.length - 1) { sum += samples[i + 1]; n++ }
+                out[i] = sum / n;
+            }
+            return out;
+        }
+
+        function trace() {
+            var series = smoothed();
+            ctx.beginPath();
+            for (var i = 0; i < series.length; i++) {
+                var x = plotLeft + plotWidth - (series.length - 1 - i) * step;
+                var y = plotTop + plotHeight - (series[i] / ceiling * plotHeight);
                 if (i === 0) {
                     ctx.moveTo(x, y);
-                } else if (i < samples.length - 1) {
-                    var nx = plotLeft + plotWidth - (samples.length - 2 - i) * step;
-                    var ny = plotTop + plotHeight - (samples[i + 1] / ceiling * plotHeight);
+                } else if (i < series.length - 1) {
+                    var nx = plotLeft + plotWidth - (series.length - 2 - i) * step;
+                    var ny = plotTop + plotHeight - (series[i + 1] / ceiling * plotHeight);
                     ctx.quadraticCurveTo(x, y, (x + nx) / 2, (y + ny) / 2);
                 } else {
                     ctx.lineTo(x, y);
@@ -143,11 +162,11 @@ Canvas {
 
         if (showFill) {
             trace();
-            // trace() ends at the leftmost sample; walk the baseline back
-            // to the right edge, then close up to the path start — inset a
-            // pixel so nothing paints on the very edge of the item.
-            ctx.lineTo(plotLeft, plotTop + plotHeight - 1);
+            // trace() ends at the newest sample (right edge); close the
+            // area polygon down the right, along the baseline, and up the
+            // left — inset a pixel so nothing paints on the item edge.
             ctx.lineTo(plotLeft + plotWidth, plotTop + plotHeight - 1);
+            ctx.lineTo(plotLeft, plotTop + plotHeight - 1);
             ctx.closePath();
             // Fade out by ~80% height so the fill never reads as a shadow
             // pooling at the bottom edge of the card.
