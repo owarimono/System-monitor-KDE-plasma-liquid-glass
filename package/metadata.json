@@ -1,0 +1,24 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "navammd@gmail.com",
+                "Name": "owarimono"
+            }
+        ],
+        "BugReportUrl": "https://github.com/owarimono/system-monitor-kde/issues",
+        "Category": "System Information",
+        "Description": "A macOS-style system monitor widget: liquid glass background, activity rings, rolling graphs for CPU, memory, network, disk and GPU.",
+        "Description[fa]": "وجیت نمایشگر منابع سیستم با ظاهر macOS: پس‌زمینه شیشه‌ای، حلقه‌های اکتیویتی و نمودار زنده برای CPU، حافظه، شبکه، دیسک و GPU.",
+        "EnabledByDefault": true,
+        "Icon": "/icon.png",
+        "Id": "io.github.system-monitor-kde.glass",
+        "License": "GPL-3.0",
+        "Name": "System Monitor (Glass)",
+        "Name[fa]": "نمایشگر سیستم (شیشه‌ای)",
+        "Version": "0.1.0",
+        "Website": "https://github.com/owarimono/system-monitor-kde"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

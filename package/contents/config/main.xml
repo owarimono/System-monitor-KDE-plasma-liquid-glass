@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0
+      http://www.kde.org/standards/kcfg/1.0/kcfg.xsd">
+  <kcfgfile name=""/>
+
+  <group name="General">
+    <!-- Data -->
+    <entry name="updateInterval" type="Int">
+      <label>Refresh interval of the monitored values in milliseconds.</label>
+      <min>500</min>
+      <max>10000</max>
+      <default>2000</default>
+    </entry>
+    <entry name="graphDuration" type="Int">
+      <label>Amount of history shown in the rolling graphs, in seconds.</label>
+      <min>30</min>
+      <max>600</max>
+      <default>120</default>
+    </entry>
+
+    <!-- Section visibility -->
+    <entry name="showCpu" type="Bool">
+      <label>Show the CPU section.</label>
+      <default>true</default>
+    </entry>
+    <entry name="showPerCore" type="Bool">
+      <label>Show per-core usage bars inside the CPU section.</label>
+      <default>true</default>
+    </entry>
+    <entry name="showCpuGraph" type="Bool">
+      <label>Show the rolling CPU usage graph.</label>
+      <default>true</default>
+    </entry>
+    <entry name="showMemory" type="Bool">
+      <label>Show the memory section.</label>
+      <default>true</default>
+    </entry>
+    <entry name="showNetwork" type="Bool">
+      <label>Show the network section.</label>
+      <default>true</default>
+    </entry>
+    <entry name="showNetGraph" type="Bool">
+      <label>Show rolling network throughput graphs.</label>
+      <default>true</default>
+    </entry>
+    <entry name="showDisk" type="Bool">
+      <label>Show the disk section.</label>
+      <default>true</default>
+    </entry>
+    <entry name="showGpu" type="Bool">
+      <label>Show the GPU section when a GPU is detected.</label>
+      <default>true</default>
+    </entry>
+    <entry name="showTemp" type="Bool">
+      <label>Show CPU temperature when sensors are available.</label>
+      <default>true</default>
+    </entry>
+
+    <!-- Appearance -->
+    <entry name="styleMode" type="Int">
+      <label>Widget material style: 0 = liquid glass, 1 = solid panel.</label>
+      <min>0</min>
+      <max>1</max>
+      <default>0</default>
+    </entry>
+    <entry name="appearance" type="Int">
+      <label>Color scheme: 0 = dark, 1 = light, 2 = follow system.</label>
+      <min>0</min>
+      <max>2</max>
+      <default>0</default>
+    </entry>
+    <entry name="accentColor" type="String">
+      <label>Accent color used by rings, bars and graphs.</label>
+      <default>#0a84ff</default>
+    </entry>
+
+    <!-- Performance -->
+    <entry name="blurRadius" type="Int">
+      <label>Strength of the frosted-glass blur in pixels.</label>
+      <min>0</min>
+      <max>48</max>
+      <default>24</default>
+    </entry>
+    <entry name="refraction" type="Bool">
+      <label>Enable the refractive edge of the liquid glass.</label>
+      <default>true</default>
+    </entry>
+    <entry name="realtimeRefraction" type="Bool">
+      <label>Continuously resample the background (needed for animated wallpapers, uses more power).</label>
+      <default>false</default>
+    </entry>
+  </group>
+</kcfg>
