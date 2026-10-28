@@ -1,0 +1,29 @@
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#41a4ff"/>
+      <stop offset="1" stop-color="#0a5bd8"/>
+    </linearGradient>
+    <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.32"/>
+      <stop offset="0.45" stop-color="#ffffff" stop-opacity="0.06"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Squircle-ish app tile -->
+  <rect x="16" y="16" width="224" height="224" rx="58" fill="url(#bg)"/>
+
+  <!-- Gauge track: 180° over the top -->
+  <path d="M 68 140 A 60 60 0 1 1 188 140"
+        fill="none" stroke="#ffffff" stroke-opacity="0.30"
+        stroke-width="18" stroke-linecap="round"/>
+
+  <!-- Gauge value arc (~135°) -->
+  <path d="M 68 140 A 60 60 0 0 1 170.4 97.6"
+        fill="none" stroke="#ffffff" stroke-opacity="0.95"
+        stroke-width="18" stroke-linecap="round"/>
+
+  <!-- Glass gloss -->
+  <rect x="16" y="16" width="224" height="224" rx="58" fill="url(#gloss)"/>
+</svg>
