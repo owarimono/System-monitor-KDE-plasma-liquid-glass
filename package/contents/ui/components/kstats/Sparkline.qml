@@ -134,10 +134,10 @@ Canvas {
         // through a vertical gradient. Points run oldest (left) to newest
         // (right).
         //
-        // Display smoothing: a centered 3-sample moving average tames
-        // one-sample traffic bursts into rounded hills (the stored series
-        // itself is untouched). Cheap: three reads per point per paint.
-        function smoothed() {
+        // Display smoothing: a centered moving average tames one-sample
+        // traffic bursts into rounded hills (the stored series itself is
+        // untouched). Cheap: a few reads per point per paint.
+        var series = smoothed();
             // NOTE: use `spark`, never `root` — `root` leaks in from
             // main.qml (the PlasmoidItem) and carries no smoothing.
             var r = Math.max(1, Math.min(6, spark.smoothing >> 1) | 0);
