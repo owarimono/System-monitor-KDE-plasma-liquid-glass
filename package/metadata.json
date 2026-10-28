@@ -17,7 +17,7 @@
         "License": "GPL-3.0",
         "Name": "System Monitor (Glass)",
         "Name[fa]": "نمایشگر سیستم (شیشه‌ای)",
-        "Version": "0.3.0",
+        "Version": "0.3.1",
         "Website": "https://github.com/owarimono/System-monitor-KDE-plasma-liquid-glass"
     },
     "X-Plasma-API-Minimum-Version": "6.0"

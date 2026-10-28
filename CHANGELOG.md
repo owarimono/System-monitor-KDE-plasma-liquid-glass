@@ -4,6 +4,16 @@ All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and the project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.3.1] - 2026-10-29
+
+### Fixed
+
+- Sparkline sample spacing was derived from the buffer limit instead of
+  the actual series length, pushing curves and fills past the plot edge
+  (the vertical bars around the network graphs).
+- Sparklines draw with a light 3-sample moving average so bursty traffic
+  renders as rounded hills instead of detached vertical bars.
+
 ## [0.3.0] - 2026-10-29
 
 ### Added
