@@ -19,7 +19,7 @@ Item {
 
     implicitHeight: tileHeight + 4 + 12
 
-    readonly property int tileHeight: 30
+    property int tileHeight: 30
 
     Row {
         id: row

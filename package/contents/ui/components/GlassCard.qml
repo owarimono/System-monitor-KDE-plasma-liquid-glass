@@ -9,13 +9,12 @@ Rectangle {
     id: card
 
     default property alias content: cardLayout.data
+    property int pad: 16
 
     radius: 18
     border.width: 1
     border.color: colors.cardBorder
-    implicitHeight: cardLayout.implicitHeight
-                    + cardLayout.anchors.topMargin
-                    + cardLayout.anchors.bottomMargin
+    implicitHeight: cardLayout.implicitHeight + card.pad * 2
 
     gradient: Gradient {
         GradientStop { position: 0.0; color: colors.cardFillTop }
@@ -40,7 +39,7 @@ Rectangle {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
-        anchors.margins: 14
+        anchors.margins: card.pad
         spacing: 10
     }
 }

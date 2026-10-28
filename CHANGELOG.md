@@ -4,6 +4,30 @@ All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and the project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.3.0] - 2026-10-29
+
+### Added
+
+- **Deep customization pass** — the settings dialog now has five pages
+  (Sections, Appearance, Effects, Colors, About):
+  - **Sections**: every card can be reordered (up/down) and toggled
+    independently; the order persists across restarts.
+  - Host card toggle, 12/24-hour clock, seconds and date switches.
+  - **Effects** page: blur strength, glass tint strength (40–160%),
+    refractive edge, continuous background sampling, floating drop
+    shadow with adjustable opacity.
+  - **Colors** page: per-metric colors for CPU, memory, download,
+    upload and GPU — empty follows the accent theme, with per-row and
+    bulk reset.
+  - Appearance adds inner-card corner radius (4–28 px) and a layout
+    density switch (comfortable / compact).
+- Per-metric colors fall back to the accent theme when empty.
+- The color pickers use KDE's KColorButton (org.kde.kquickcontrols).
+
+### Fixed
+
+- The config schema validation in CI now handles the KConfig namespace.
+
 ## [0.2.0] - 2026-10-28
 
 ### Changed

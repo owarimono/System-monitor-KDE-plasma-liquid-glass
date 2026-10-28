@@ -20,17 +20,46 @@
       <default>120</default>
     </entry>
 
-    <!-- Section visibility -->
+    <!-- Section order (comma separated keys; membership comes from the
+         show* toggles below). -->
+    <entry name="sectionOrder" type="StringList">
+      <label>Display order of the section cards.</label>
+      <default>cpu,memory,network,disk,gpu</default>
+    </entry>
+
+    <!-- Host card -->
+    <entry name="showHostCard" type="Bool">
+      <label>Show the host card with the machine name and clock.</label>
+      <default>true</default>
+    </entry>
+    <entry name="clock24" type="Bool">
+      <label>Use a 24-hour clock.</label>
+      <default>true</default>
+    </entry>
+    <entry name="clockSeconds" type="Bool">
+      <label>Show seconds in the clock.</label>
+      <default>true</default>
+    </entry>
+    <entry name="showDate" type="Bool">
+      <label>Show the date under the clock.</label>
+      <default>true</default>
+    </entry>
+
+    <!-- Sections -->
     <entry name="showCpu" type="Bool">
       <label>Show the CPU section.</label>
       <default>true</default>
     </entry>
     <entry name="showPerCore" type="Bool">
-      <label>Show per-core usage bars inside the CPU section.</label>
+      <label>Show per-core usage tiles inside the CPU section.</label>
       <default>true</default>
     </entry>
     <entry name="showCpuGraph" type="Bool">
       <label>Show the rolling CPU usage graph.</label>
+      <default>true</default>
+    </entry>
+    <entry name="showTemp" type="Bool">
+      <label>Show CPU temperature when sensors are available.</label>
       <default>true</default>
     </entry>
     <entry name="showMemory" type="Bool">
@@ -42,19 +71,27 @@
       <default>true</default>
     </entry>
     <entry name="showNetGraph" type="Bool">
-      <label>Show rolling network throughput graphs.</label>
+      <label>Show the rolling download graph.</label>
       <default>true</default>
     </entry>
     <entry name="showDisk" type="Bool">
       <label>Show the disk section.</label>
       <default>true</default>
     </entry>
+    <entry name="showDiskRates" type="Bool">
+      <label>Show the disk read/write rate row.</label>
+      <default>true</default>
+    </entry>
     <entry name="showGpu" type="Bool">
       <label>Show the GPU section when a GPU is detected.</label>
       <default>true</default>
     </entry>
-    <entry name="showTemp" type="Bool">
-      <label>Show CPU temperature when sensors are available.</label>
+    <entry name="showGpuTemp" type="Bool">
+      <label>Show GPU temperature next to each usage percentage.</label>
+      <default>true</default>
+    </entry>
+    <entry name="showVram" type="Bool">
+      <label>Show the VRAM row for each GPU.</label>
       <default>true</default>
     </entry>
 
@@ -64,6 +101,12 @@
       <min>8</min>
       <max>40</max>
       <default>20</default>
+    </entry>
+    <entry name="cardRadius" type="Int">
+      <label>Corner radius of the inner glass cards in pixels.</label>
+      <min>4</min>
+      <max>28</max>
+      <default>18</default>
     </entry>
     <entry name="styleMode" type="Int">
       <label>Widget material style: 0 = liquid glass, 1 = solid panel.</label>
@@ -77,17 +120,49 @@
       <max>2</max>
       <default>0</default>
     </entry>
+    <entry name="density" type="Int">
+      <label>Layout density: 0 = comfortable, 1 = compact.</label>
+      <min>0</min>
+      <max>1</max>
+      <default>0</default>
+    </entry>
     <entry name="accentColor" type="String">
-      <label>Accent color used by rings, bars and graphs.</label>
+      <label>Accent color used by meters, graphs and tiles.</label>
       <default>#0a84ff</default>
     </entry>
+    <entry name="cpuColor" type="String">
+      <label>Custom CPU color; empty follows the accent.</label>
+      <default></default>
+    </entry>
+    <entry name="memoryColor" type="String">
+      <label>Custom memory color; empty follows the accent.</label>
+      <default></default>
+    </entry>
+    <entry name="netDownColor" type="String">
+      <label>Custom download color; empty follows the accent.</label>
+      <default></default>
+    </entry>
+    <entry name="netUpColor" type="String">
+      <label>Custom upload color; empty follows a lighter accent.</label>
+      <default></default>
+    </entry>
+    <entry name="gpuColor" type="String">
+      <label>Custom GPU color; empty follows the accent.</label>
+      <default></default>
+    </entry>
 
-    <!-- Performance -->
+    <!-- Effects -->
     <entry name="blurRadius" type="Int">
       <label>Strength of the frosted-glass blur in pixels.</label>
       <min>0</min>
       <max>48</max>
       <default>28</default>
+    </entry>
+    <entry name="tintStrength" type="Int">
+      <label>Strength of the glass tint in percent.</label>
+      <min>40</min>
+      <max>160</max>
+      <default>100</default>
     </entry>
     <entry name="refraction" type="Bool">
       <label>Enable the refractive edge of the liquid glass.</label>
@@ -96,6 +171,16 @@
     <entry name="realtimeRefraction" type="Bool">
       <label>Continuously resample the background (needed for animated wallpapers, uses more power).</label>
       <default>false</default>
+    </entry>
+    <entry name="shadowEnabled" type="Bool">
+      <label>Draw the floating drop shadow.</label>
+      <default>true</default>
+    </entry>
+    <entry name="shadowStrength" type="Int">
+      <label>Opacity of the drop shadow in percent.</label>
+      <min>0</min>
+      <max>100</max>
+      <default>60</default>
     </entry>
   </group>
 </kcfg>

@@ -39,7 +39,8 @@ jobs:
           python3 - <<'EOF'
           import xml.etree.ElementTree as ET
           tree = ET.parse("package/contents/config/main.xml")
-          entries = tree.findall(".//entry")
+          ns = "{http://www.kde.org/standards/kcfg/1.0}"
+          entries = tree.findall(".//" + ns + "entry")
           assert entries, "main.xml has no entries"
           names = {e.get("name") for e in entries}
           assert all(names), "entry without name found"

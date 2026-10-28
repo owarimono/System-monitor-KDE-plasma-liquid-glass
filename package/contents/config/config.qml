@@ -13,6 +13,16 @@ ConfigModel {
         source: "config/ConfigAppearance.qml"
     }
     ConfigCategory {
+        name: i18n("Effects")
+        icon: "shader"
+        source: "config/ConfigEffects.qml"
+    }
+    ConfigCategory {
+        name: i18n("Colors")
+        icon: "color-picker"
+        source: "config/ConfigColors.qml"
+    }
+    ConfigCategory {
         name: i18n("About")
         icon: "help-about"
         source: "config/ConfigAbout.qml"

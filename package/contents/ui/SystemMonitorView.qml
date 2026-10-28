@@ -9,9 +9,10 @@ import "components/kstats" as KStats
 // Full desktop representation, modeled on the macOS Tahoe liquid-glass
 // widget mockup: a host card with a live clock, then one glass section
 // card per metric (icon + title + mono percentage header, sparkline /
-// tiles / dotted breakdown rows inside). Stat components are adapted
-// from KStats (oowl/kstats, MIT — see LICENSES/KStats-MIT.txt); the
-// glass background, data layer and configuration are this widget's own.
+// tiles / dotted breakdown rows inside). Sections are orderable and
+// individually toggleable from the settings. Stat components are adapted
+// from KStats (oowl/kstats, MIT — see LICENSES/KStats-MIT.txt); the glass
+// background, data layer and configuration are this widget's own.
 
 Item {
     id: view
@@ -30,27 +31,62 @@ Item {
         styleMode: cfg.styleMode
         appearance: cfg.appearance
         accentColor: cfg.accentColor
+        tintScale: cfg.tintStrength / 100
     }
 
     readonly property string monoFamily: "JetBrains Mono"
+    readonly property bool compact: cfg.density === 1
 
-    // macOS uses one accent everywhere; the Up rate and memory ring-tone
-    // are just lighter stops of it. The disk bar keeps its level ramp.
-    readonly property color upColor: Qt.lighter(colors.accent, 1.25)
+    // Per-metric colors — empty config values follow the accent theme.
+    function metricColor(custom) {
+        return custom === "" ? colors.accent : custom
+    }
+    readonly property color cpuColor: metricColor(cfg.cpuColor)
+    readonly property color memoryColor: metricColor(cfg.memoryColor)
+    readonly property color netDownColor: metricColor(cfg.netDownColor)
+    readonly property color netUpColor: cfg.netUpColor === ""
+        ? Qt.lighter(colors.accent, 1.25) : cfg.netUpColor
+    readonly property color gpuColor: metricColor(cfg.gpuColor)
 
-    // Dynamic ceilings for the network sparklines (bytes/s history).
-    readonly property real netDownMax: netPeak(hub.downHistory)
-    readonly property real netUpMax: netPeak(hub.upHistory)
+    // Density-driven metrics.
+    readonly property int contentMargin: compact ? 16 : 20
+    readonly property int contentSpacing: compact ? 10 : 12
+    readonly property int cardPad: compact ? 12 : 16
+    readonly property real graphHeight: compact ? 2.2 : 2.8
 
-    function netPeak(history) {
-        let peak = 1024
-        for (let i = 0; i < history.length; i++)
-            peak = Math.max(peak, history[i])
-        return peak * 1.15
+    // Section order + membership: the persisted order is normalized so
+    // every known section is present exactly once, then filtered by the
+    // per-section toggles.
+    readonly property var defaultOrder: ["cpu", "memory", "network", "disk", "gpu"]
+    readonly property var orderedSections: {
+        const saved = Array.isArray(cfg.sectionOrder)
+            ? cfg.sectionOrder.map(String) : []
+        let order = defaultOrder.filter(k => saved.indexOf(k) >= 0)
+        for (const k of defaultOrder)
+            if (order.indexOf(k) < 0)
+                order.push(k)
+        return order.filter(k => sectionEnabled(k))
+    }
+
+    function sectionEnabled(key) {
+        switch (key) {
+        case "cpu": return cfg.showCpu
+        case "memory": return cfg.showMemory
+        case "network": return cfg.showNetwork
+        case "disk": return cfg.showDisk
+        case "gpu": return cfg.showGpu
+        }
+        return false
+    }
+
+    function clockFormat() {
+        if (cfg.clock24)
+            return cfg.clockSeconds ? "HH:mm:ss" : "HH:mm"
+        return cfg.clockSeconds ? "h:mm:ss AP" : "h:mm AP"
     }
 
     // Live clock for the host card.
-    property string clockText: Qt.formatDateTime(new Date(), "HH:mm:ss")
+    property string clockText: Qt.formatDateTime(new Date(), clockFormat())
     property string dateText: Qt.formatDateTime(new Date(), "dddd, d MMM")
 
     Timer {
@@ -58,7 +94,7 @@ Item {
         repeat: true
         running: view.visible
         onTriggered: {
-            view.clockText = Qt.formatDateTime(new Date(), "HH:mm:ss")
+            view.clockText = Qt.formatDateTime(new Date(), view.clockFormat())
             view.dateText = Qt.formatDateTime(new Date(), "dddd, d MMM")
         }
     }
@@ -79,9 +115,9 @@ Item {
     MultiEffect {
         anchors.fill: glassBg
         source: glassBg
-        shadowEnabled: true
+        shadowEnabled: cfg.shadowEnabled
         shadowBlur: 0.9
-        shadowColor: Qt.rgba(0, 0, 0, 0.45)
+        shadowColor: Qt.rgba(0, 0, 0, 0.45 * cfg.shadowStrength / 60)
         shadowVerticalOffset: 12
         autoPaddingEnabled: true
     }
@@ -149,8 +185,8 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
-        anchors.margins: 20
-        spacing: 12
+        anchors.margins: view.contentMargin
+        spacing: view.contentSpacing
 
         opacity: 0
         transform: Translate { id: appearShift; y: 14 }
@@ -165,7 +201,9 @@ Item {
 
         // ── Host card ─────────────────────────────────────────────────
         GlassCard {
+            visible: cfg.showHostCard
             Layout.fillWidth: true
+            pad: view.cardPad
 
             RowLayout {
                 Layout.fillWidth: true
@@ -215,6 +253,7 @@ Item {
                     }
 
                     Text {
+                        visible: cfg.showDate
                         Layout.fillWidth: true
                         horizontalAlignment: Text.AlignRight
                         text: view.dateText
@@ -226,10 +265,33 @@ Item {
             }
         }
 
-        // ── CPU ───────────────────────────────────────────────────────
+        // ── Ordered sections ──────────────────────────────────────────
+        Repeater {
+            model: view.orderedSections
+
+            delegate: Loader {
+                required property string modelData
+                Layout.fillWidth: true
+                Layout.preferredHeight: item ? item.implicitHeight : 0
+                sourceComponent: view.sectionComponents[modelData]
+            }
+        }
+    }
+
+    function pct(v) {
+        return Math.max(0, Math.min(100, Math.round(v))) + "%"
+    }
+
+    // ── Section components ────────────────────────────────────────────
+
+    component CpuSection: ColumnLayout {
+        anchors.left: parent.left
+        anchors.right: parent.right
+        spacing: view.contentSpacing
+
         GlassCard {
-            visible: cfg.showCpu
             Layout.fillWidth: true
+            pad: view.cardPad
 
             ColumnLayout {
                 Layout.fillWidth: true
@@ -238,13 +300,13 @@ Item {
                 SectionHeader {
                     title: i18n("CPU")
                     iconName: Qt.resolvedUrl("icons/sf/cpu.svg")
-                    value: view.pct(hub.num(hub.cpuUsage.value))
+                    value: pct(hub.num(hub.cpuUsage.value))
                 }
 
                 Rectangle {
                     visible: cfg.showCpuGraph
                     Layout.fillWidth: true
-                    Layout.preferredHeight: Kirigami.Units.gridUnit * 3.2
+                    Layout.preferredHeight: Kirigami.Units.gridUnit * view.graphHeight
                     radius: 12
                     color: colors.controlFill
                     border.width: 1
@@ -267,17 +329,22 @@ Item {
                     count: hub.coreCount
                     sensorAt: hub.coreSensorAt
                     revision: hub.coreRevision
+                    tileHeight: compact ? 24 : 30
                     fillColor: colors.accent
                     trackColor: colors.controlFill
                     labelColor: colors.labelTertiary
                 }
             }
         }
+    }
 
-        // ── Memory ────────────────────────────────────────────────────
+    component MemorySection: ColumnLayout {
+        anchors.left: parent.left
+        anchors.right: parent.right
+
         GlassCard {
-            visible: cfg.showMemory
             Layout.fillWidth: true
+            pad: view.cardPad
 
             ColumnLayout {
                 Layout.fillWidth: true
@@ -286,7 +353,7 @@ Item {
                 SectionHeader {
                     title: i18n("Memory")
                     iconName: Qt.resolvedUrl("icons/sf/memory.svg")
-                    value: view.pct(hub.memLevel * 100)
+                    value: pct(hub.memLevel * 100)
                 }
 
                 KStats.DetailRow {
@@ -316,11 +383,15 @@ Item {
                 }
             }
         }
+    }
 
-        // ── Network ───────────────────────────────────────────────────
+    component NetworkSection: ColumnLayout {
+        anchors.left: parent.left
+        anchors.right: parent.right
+
         GlassCard {
-            visible: cfg.showNetwork
             Layout.fillWidth: true
+            pad: view.cardPad
 
             ColumnLayout {
                 Layout.fillWidth: true
@@ -347,10 +418,10 @@ Item {
 
                     KStats.Sparkline {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 20
+                        Layout.preferredHeight: compact ? 16 : 20
                         samples: hub.downHistory
                         autoSample: false
-                        maxValue: view.netDownMax
+                        maxValue: netDownMax
                         lineColor: colors.accent
                         showFill: true
                     }
@@ -370,7 +441,7 @@ Item {
 
                     Text {
                         text: i18n("Up")
-                        color: view.upColor
+                        color: netUpColor
                         font.family: "Inter"
                         font.pixelSize: 12
                         font.weight: Font.DemiBold
@@ -378,11 +449,11 @@ Item {
 
                     KStats.Sparkline {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 20
+                        Layout.preferredHeight: compact ? 16 : 20
                         samples: hub.upHistory
                         autoSample: false
-                        maxValue: view.netUpMax
-                        lineColor: view.upColor
+                        maxValue: netUpMax
+                        lineColor: netUpColor
                         showFill: true
                     }
 
@@ -398,21 +469,25 @@ Item {
                 KStats.Sparkline {
                     visible: cfg.showNetGraph
                     Layout.fillWidth: true
-                    Layout.preferredHeight: Kirigami.Units.gridUnit * 2.8
+                    Layout.preferredHeight: Kirigami.Units.gridUnit * view.graphHeight
                     samples: hub.downHistory
                     autoSample: false
-                    maxValue: view.netDownMax
+                    maxValue: netDownMax
                     lineColor: colors.accent
                     showFill: true
                     scaleColor: colors.labelTertiary
                 }
             }
         }
+    }
 
-        // ── Disk ──────────────────────────────────────────────────────
+    component DiskSection: ColumnLayout {
+        anchors.left: parent.left
+        anchors.right: parent.right
+
         GlassCard {
-            visible: cfg.showDisk
             Layout.fillWidth: true
+            pad: view.cardPad
 
             ColumnLayout {
                 Layout.fillWidth: true
@@ -421,7 +496,7 @@ Item {
                 SectionHeader {
                     title: i18n("Disk")
                     iconName: Qt.resolvedUrl("icons/sf/disk.svg")
-                    value: view.pct(hub.num(hub.diskUsedPercent.value))
+                    value: pct(hub.num(hub.diskUsedPercent.value))
                     valueColor: colors.levelColor(hub.num(hub.diskUsedPercent.value) / 100)
                 }
 
@@ -485,7 +560,7 @@ Item {
                         anchors.top: parent.top
                         anchors.bottom: parent.bottom
                         width: parent.width * Math.max(0, Math.min(1, hub.num(hub.diskUsedPercent.value) / 100))
-                        radius: 5
+                        radius: 4
                         color: colors.levelColor(hub.num(hub.diskUsedPercent.value) / 100)
 
                         Behavior on width {
@@ -496,6 +571,7 @@ Item {
 
                 RowLayout {
                     Layout.fillWidth: true
+                    visible: cfg.showDiskRates
 
                     Text {
                         text: "↗  R:  " + String(hub.diskRead.formattedValue ?? "")
@@ -515,11 +591,16 @@ Item {
                 }
             }
         }
+    }
 
-        // ── GPUs (one block per adapter, with its name) ───────────────
+    component GpuSection: ColumnLayout {
+        anchors.left: parent.left
+        anchors.right: parent.right
+
         GlassCard {
-            visible: cfg.showGpu && hub.gpus.length > 0
+            visible: hub.gpus.length > 0
             Layout.fillWidth: true
+            pad: view.cardPad
 
             ColumnLayout {
                 Layout.fillWidth: true
@@ -561,6 +642,7 @@ Item {
                                 spacing: 6
 
                                 Text {
+                                    visible: cfg.showGpuTemp
                                     text: hub.num(modelData.temperature.value) > 0
                                           ? Math.round(hub.num(modelData.temperature.value)) + "°" : ""
                                     color: colors.labelTertiary
@@ -599,7 +681,7 @@ Item {
                         }
 
                         KStats.DetailRow {
-                            visible: hub.num(modelData.vramTotal.value) > 0
+                            visible: cfg.showVram && hub.num(modelData.vramTotal.value) > 0
                             label: i18n("VRAM")
                             value: String(modelData.vramUsed.formattedValue ?? "") + " / "
                                    + String(modelData.vramTotal.formattedValue ?? "")
@@ -612,7 +694,18 @@ Item {
         }
     }
 
-    function pct(v) {
-        return Math.max(0, Math.min(100, Math.round(v))) + "%"
-    }
+    // Ordered section card map, consumed by the content Repeater.
+    readonly property var sectionComponents: ({
+        "cpu": cpuSectionComp,
+        "memory": memorySectionComp,
+        "network": networkSectionComp,
+        "disk": diskSectionComp,
+        "gpu": gpuSectionComp
+    })
+
+    Component { id: cpuSectionComp; CpuSection {} }
+    Component { id: memorySectionComp; MemorySection {} }
+    Component { id: networkSectionComp; NetworkSection {} }
+    Component { id: diskSectionComp; DiskSection {} }
+    Component { id: gpuSectionComp; GpuSection {} }
 }

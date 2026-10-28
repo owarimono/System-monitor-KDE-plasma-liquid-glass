@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls as QQC2
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
+import org.kde.kquickcontrols as KQC
 
 // Material (glass/solid), color scheme, accent theme and the performance
 // knobs of the liquid glass effect.
@@ -83,11 +84,10 @@ Kirigami.FormLayout {
         }
     }
 
-    Kirigami.ColorButton {
+    KQC.ColorButton {
         id: accentButton
         Kirigami.FormData.label: i18n("Custom accent:")
         enabled: accentCombo.currentIndex === page.customAccentIndex
-        modal: true
         showAlphaChannel: false
         onColorChanged: {
             if (enabled)
