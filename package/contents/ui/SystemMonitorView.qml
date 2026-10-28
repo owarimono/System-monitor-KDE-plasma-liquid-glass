@@ -57,7 +57,7 @@ Item {
     // Section order + membership: the persisted order is normalized so
     // every known section is present exactly once, then filtered by the
     // per-section toggles.
-    readonly property var defaultOrder: ["cpu", "memory", "network", "disk", "gpu"]
+    readonly property var defaultOrder: ["cpu", "memory", "network", "disk", "gpu", "battery"]
     readonly property var orderedSections: {
         const saved = Array.isArray(cfg.sectionOrder)
             ? cfg.sectionOrder.map(String) : []
@@ -75,6 +75,7 @@ Item {
         case "network": return cfg.showNetwork
         case "disk": return cfg.showDisk
         case "gpu": return cfg.showGpu
+        case "battery": return cfg.showBattery
         }
         return false
     }
@@ -280,6 +281,32 @@ Item {
 
     function pct(v) {
         return Math.max(0, Math.min(100, Math.round(v))) + "%"
+    }
+
+    // macOS battery color language: charging/full green, low charge
+    // yellow then red.
+    function batteryColor(level, state) {
+        if (state === 1 || level >= 0.999)
+            return colors.green
+        if (level < 0.1)
+            return colors.red
+        if (level < 0.25)
+            return colors.orange
+        return colors.green
+    }
+
+    function batteryStateText(state, remainingMsec) {
+        var time = ""
+        if (remainingMsec > 0) {
+            var mins = Math.round(remainingMsec / 60000)
+            time = "  ·  " + Math.floor(mins / 60) + ":" + String(mins % 60).padStart(2, "0")
+        }
+        switch (state) {
+        case 1: return i18n("Charging") + time
+        case 2: return i18n("Discharging") + time
+        case 3: return i18n("Fully charged")
+        default: return ""
+        }
     }
 
     // ── Section components ────────────────────────────────────────────
@@ -552,24 +579,14 @@ Item {
                     }
                 }
 
-                Rectangle {
+                MacBar {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 8
-                    radius: 4
-                    color: colors.controlFill
-
-                    Rectangle {
-                        anchors.left: parent.left
-                        anchors.top: parent.top
-                        anchors.bottom: parent.bottom
-                        width: parent.width * Math.max(0, Math.min(1, hub.num(hub.diskUsedPercent.value) / 100))
-                        radius: 4
-                        color: colors.levelColor(hub.num(hub.diskUsedPercent.value) / 100)
-
-                        Behavior on width {
-                            NumberAnimation { duration: 500; easing.type: Easing.OutCubic }
-                        }
-                    }
+                    level: hub.num(hub.diskUsedPercent.value) / 100
+                    fillColor: colors.levelColor(hub.num(hub.diskUsedPercent.value) / 100)
+                    trackColor: colors.controlFill
+                    trackBorderColor: colors.separator
+                    capColor: Qt.rgba(1, 1, 1, 0.35)
                 }
 
                 RowLayout {
@@ -590,6 +607,82 @@ Item {
                         color: colors.labelSecondary
                         font.family: view.monoFamily
                         font.pixelSize: 11
+                    }
+                }
+            }
+        }
+    }
+
+    component BatterySection: ColumnLayout {
+        anchors.left: parent.left
+        anchors.right: parent.right
+
+        GlassCard {
+            visible: hub.hasBattery
+            Layout.fillWidth: true
+            pad: view.cardPad
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 10
+
+                SectionHeader {
+                    title: i18n("Battery")
+                    iconName: Qt.resolvedUrl("icons/sf/battery.svg")
+                    value: hub.batteryPercent + "%"
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 14
+
+                    Item {
+                        Layout.preferredWidth: 58
+                        Layout.preferredHeight: 16
+
+                        // Battery body outline
+                        Rectangle {
+                            anchors.fill: parent
+                            anchors.rightMargin: 3
+                            radius: 4.5
+                            color: "transparent"
+                            border.width: 1.5
+                            border.color: Qt.rgba(colors.foreground.r, colors.foreground.g, colors.foreground.b, 0.55)
+
+                            Rectangle {
+                                anchors.fill: parent
+                                anchors.margins: 2
+                                radius: 2.5
+                                color: view.batteryColor(hub.batteryPercent / 100, hub.batteryState)
+                                width: (parent.width - 4) * Math.max(0, Math.min(1, hub.batteryPercent / 100))
+
+                                Behavior on width {
+                                    NumberAnimation { duration: 500; easing.type: Easing.OutCubic }
+                                }
+                            }
+                        }
+
+                        // Terminal nub
+                        Rectangle {
+                            anchors.right: parent.right
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: 2.5
+                            height: parent.height * 0.45
+                            radius: 1.25
+                            color: Qt.rgba(colors.foreground.r, colors.foreground.g, colors.foreground.b, 0.55)
+                        }
+                    }
+
+                    Text {
+                        text: {
+                            var state = hub.batteryState
+                            if (hub.batteryPlugged && (state === 3 || hub.batteryPercent >= 100))
+                                return i18n("Fully charged")
+                            return view.batteryStateText(state, hub.batteryRemainingMsec)
+                        }
+                        color: colors.labelSecondary
+                        font.family: "Inter"
+                        font.pixelSize: 12
                     }
                 }
             }
@@ -663,24 +756,14 @@ Item {
                             }
                         }
 
-                        Rectangle {
+                        MacBar {
                             Layout.fillWidth: true
                             Layout.preferredHeight: 8
-                            radius: 4
-                            color: colors.controlFill
-
-                            Rectangle {
-                                anchors.left: parent.left
-                                anchors.top: parent.top
-                                anchors.bottom: parent.bottom
-                                width: parent.width * Math.max(0, Math.min(1, parent.parent.level))
-                                radius: 4
-                                color: colors.accent
-
-                                Behavior on width {
-                                    NumberAnimation { duration: 500; easing.type: Easing.OutCubic }
-                                }
-                            }
+                            level: parent.parent.level
+                            fillColor: colors.accent
+                            trackColor: colors.controlFill
+                            trackBorderColor: colors.separator
+                            capColor: Qt.rgba(1, 1, 1, 0.35)
                         }
 
                         KStats.DetailRow {
@@ -703,7 +786,8 @@ Item {
         "memory": memorySectionComp,
         "network": networkSectionComp,
         "disk": diskSectionComp,
-        "gpu": gpuSectionComp
+        "gpu": gpuSectionComp,
+        "battery": batterySectionComp
     })
 
     Component { id: cpuSectionComp; CpuSection {} }
@@ -711,4 +795,5 @@ Item {
     Component { id: networkSectionComp; NetworkSection {} }
     Component { id: diskSectionComp; DiskSection {} }
     Component { id: gpuSectionComp; GpuSection {} }
+    Component { id: batterySectionComp; BatterySection {} }
 }

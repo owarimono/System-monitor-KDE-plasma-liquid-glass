@@ -1,5 +1,6 @@
 import QtQuick
 import org.kde.ksysguard.sensors as Sensors
+import org.kde.plasma.private.battery as Battery
 
 // Data layer: subscribes to ksystemstats sensors and keeps short history
 // buffers for the rolling graphs. All UI components read from here so the
@@ -216,6 +217,20 @@ Item {
             downScale = niceCeiling(dPeak)
         if (uPeak > upScale || uPeak < upScale * 0.4)
             upScale = niceCeiling(uPeak)
+    }
+
+    // ── Battery (plasma's own battery control — Solid/UPower backed) ──
+    readonly property bool hasBattery: batteryModel.hasBatteries
+    readonly property int batteryPercent: batteryModel.percent
+    readonly property int batteryState: batteryModel.state
+    readonly property bool batteryPlugged: batteryModel.pluggedIn
+    readonly property int batteryCharging: 1   // BatteryControlModel.Charging
+    readonly property int batteryDischarging: 2
+    readonly property int batteryFullyCharged: 3
+    readonly property var batteryRemainingMsec: batteryModel.remainingMsec
+
+    Battery.BatteryControlModel {
+        id: batteryModel
     }
 
     // ── History buffers for the rolling graphs ────────────────────────

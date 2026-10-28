@@ -24,7 +24,7 @@
          show* toggles below). -->
     <entry name="sectionOrder" type="StringList">
       <label>Display order of the section cards.</label>
-      <default>cpu,memory,network,disk,gpu</default>
+      <default>cpu,memory,network,disk,gpu,battery</default>
     </entry>
 
     <!-- Host card -->
@@ -92,6 +92,10 @@
     </entry>
     <entry name="showVram" type="Bool">
       <label>Show the VRAM row for each GPU.</label>
+      <default>true</default>
+    </entry>
+    <entry name="showBattery" type="Bool">
+      <label>Show the battery section (laptops).</label>
       <default>true</default>
     </entry>
 

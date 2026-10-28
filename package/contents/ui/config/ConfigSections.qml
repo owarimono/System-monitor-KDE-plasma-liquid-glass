@@ -31,6 +31,7 @@ Kirigami.FormLayout {
     property bool cfg_showGpu: true
     property bool cfg_showGpuTemp: true
     property bool cfg_showVram: true
+    property bool cfg_showBattery: true
 
     // The canonical section set; `order` is the persisted (or default)
     // display order, normalized so every section is present exactly once.
@@ -39,9 +40,10 @@ Kirigami.FormLayout {
         { key: "memory", title: i18n("Memory"), prop: "cfg_showMemory" },
         { key: "network", title: i18n("Network"), prop: "cfg_showNetwork" },
         { key: "disk", title: i18n("Disk"), prop: "cfg_showDisk" },
-        { key: "gpu", title: i18n("GPU"), prop: "cfg_showGpu" }
+        { key: "gpu", title: i18n("GPU"), prop: "cfg_showGpu" },
+        { key: "battery", title: i18n("Battery"), prop: "cfg_showBattery" }
     ]
-    readonly property var defaultOrder: ["cpu", "memory", "network", "disk", "gpu"]
+    readonly property var defaultOrder: ["cpu", "memory", "network", "disk", "gpu", "battery"]
 
     property var order: []
 
@@ -269,6 +271,17 @@ Kirigami.FormLayout {
         checked: page.cfg_showVram
         onToggled: page.cfg_showVram = checked
         text: i18n("VRAM usage")
+    }
+
+    GroupCaption { caption: i18n("Battery") }
+
+    QQC2.CheckBox {
+        anchors.left: parent.left
+        anchors.leftMargin: 24
+        enabled: page.cfg_showBattery
+        checked: page.cfg_showBattery
+        onToggled: page.cfg_showBattery = checked
+        text: i18n("Battery pill and charge state (laptops)")
     }
 
     component GroupCaption: Text {

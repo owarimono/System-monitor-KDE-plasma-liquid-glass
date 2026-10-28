@@ -4,6 +4,20 @@ All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and the project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.4.0] - 2026-10-29
+
+### Added
+
+- **Battery section** (orderable, laptops only): macOS-style battery pill
+  with level fill and terminal nub, mono percentage in the card header,
+  and the charge state (charging / discharging with remaining time,
+  fully charged) using plasma's own battery control (Solid/UPower).
+- **macOS-style bars**: progress bars across the widget (disk, GPUs,
+  battery) now render as inset rounded tracks with a gradient fill and a
+  glossy leading cap.
+- Battery level follows the macOS color language: green while charging
+  or healthy, yellow below 25%, red below 10%.
+
 ## [0.3.1] - 2026-10-29
 
 ### Fixed
