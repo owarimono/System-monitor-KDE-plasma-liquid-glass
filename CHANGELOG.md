@@ -8,22 +8,29 @@ and the project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
-- Restyled the stat presentation to the macOS Stats-app look using
-  components adapted from [KStats](https://github.com/oowl/kstats)
-  (MIT — see `LICENSES/KStats-MIT.txt`): `RingGauge`, `BarStat` rows with
-  sparkline meters and anti-jitter tabular numerals, `Sparkline` history
-  charts, `CpuCoreBars` and `DetailRow`s.
-- Sections now live directly on the glass in macOS Settings style —
-  hairline separators and small uppercase group captions instead of
-  nested card boxes.
+- Redesigned the desktop representation around Tahoe-style liquid-glass
+  section cards, matching the macOS widget mockup: a host card (machine
+  name, OS/RAM summary, live mono clock), then one glass card per metric
+  with an icon + semibold title + mono percentage header.
+- CPU: usage sparkline in an inset panel and numbered per-core tiles
+  (fill rising from the bottom, eased).
+- Memory: Used / Free / Swap breakdown with macOS-style color dots.
+- Disk: Used/Total columns, usage-ramp progress bar and mono R/W rates.
+- Bundled **JetBrains Mono** (SIL OFL — `LICENSES/JetBrainsMono-OFL.txt`)
+  for all numerals, clocks and rates — the closest open match to Apple's
+  SF Mono.
+- Eased fills everywhere: tiles, meters and progress bars animate with
+  500 ms OutCubic instead of stepping.
+- Restyled the stat presentation using components adapted from
+  [KStats](https://github.com/oowl/kstats) (MIT — see
+  `LICENSES/KStats-MIT.txt`): `Sparkline` history charts, `BarStat` rows
+  with sparkline meters and anti-jitter tabular numerals, `DetailRow`s.
 - Glass material: added an Apple-style inner edge stroke and a diagonal
   top sheen, stronger refraction/chromatic aberration and a lighter
   tint so the wallpaper reads through like real glass.
-- Per-metric accent colors (CPU blue, RAM purple, network green/orange,
-  GPU pink), following the macOS Stats convention.
-- The hand-rolled `ActivityRing`, `RollingGraph`, `StatBar`, `CoreBars`
-  and `SectionHeader` components were removed where superseded
-  (`ActivityRing` remains in the compact panel representation).
+- The hand-rolled `ActivityRing` remains only in the compact panel
+  representation; superseded `RingGauge`, `CpuCoreBars` and `SectionHeader`
+  components were removed.
 
 ### Added
 

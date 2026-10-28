@@ -100,19 +100,27 @@ RowLayout {
             anchors.bottom: parent.bottom
             height: parent.height * Math.max(0, Math.min(100, stat.percent)) / 100
             color: Qt.rgba(stat.accentColor.r, stat.accentColor.g, stat.accentColor.b, 0.28)
+
+            Behavior on height {
+                NumberAnimation { duration: 500; easing.type: Easing.OutCubic }
+            }
         }
 
-        Rectangle {
-            visible: stat.previewMode === "bar"
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.bottom: parent.bottom
-            anchors.leftMargin: 2
-            anchors.rightMargin: 2
-            anchors.bottomMargin: 2
-            height: Math.max(0, parent.height - 4) * Math.max(0, Math.min(100, stat.percent)) / 100
-            color: Qt.rgba(stat.accentColor.r, stat.accentColor.g, stat.accentColor.b, 0.72)
-        }
+                    Rectangle {
+                        visible: stat.previewMode === "bar"
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.bottom: parent.bottom
+                        anchors.leftMargin: 2
+                        anchors.rightMargin: 2
+                        anchors.bottomMargin: 2
+                        height: Math.max(0, parent.height - 4) * Math.max(0, Math.min(100, stat.percent)) / 100
+                        color: Qt.rgba(stat.accentColor.r, stat.accentColor.g, stat.accentColor.b, 0.72)
+
+                        Behavior on height {
+                            NumberAnimation { duration: 500; easing.type: Easing.OutCubic }
+                        }
+                    }
 
         Local.Sparkline {
             visible: stat.previewMode === "sparkline"
@@ -132,7 +140,7 @@ RowLayout {
         color: stat.valueColor
         elide: Text.ElideRight
         font.pixelSize: stat.valuePixelSize > 0 ? stat.valuePixelSize : Kirigami.Theme.smallFont.pixelSize
-        font.family: "Inter"
+        font.family: "JetBrains Mono"
         font.weight: Font.Medium
         font.features: { "tnum": 1 }
         horizontalAlignment: Text.AlignRight

@@ -53,6 +53,20 @@ QtObject {
         ? Qt.rgba(0, 0, 0, 0.07)
         : Qt.rgba(1, 1, 1, 0.10)
 
+    // Glass section cards (Tahoe style: a second glass layer on the glass).
+    readonly property color cardFillTop: isLight
+        ? Qt.rgba(1, 1, 1, 0.55)
+        : Qt.rgba(1, 1, 1, 0.13)
+    readonly property color cardFillBottom: isLight
+        ? Qt.rgba(1, 1, 1, 0.38)
+        : Qt.rgba(1, 1, 1, 0.06)
+    readonly property color cardBorder: isLight
+        ? Qt.rgba(0, 0, 0, 0.08)
+        : Qt.rgba(1, 1, 1, 0.15)
+    readonly property color cardHighlight: isLight
+        ? Qt.rgba(1, 1, 1, 0.9)
+        : Qt.rgba(1, 1, 1, 0.22)
+
     // ── Semantics (macOS system colors) ───────────────────────────────
     readonly property color accent: accentColor
     readonly property color green: isLight ? "#34c759" : "#32d74b"

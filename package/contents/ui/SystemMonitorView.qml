@@ -5,12 +5,12 @@ import org.kde.kirigami as Kirigami
 import "components"
 import "components/kstats" as KStats
 
-// Full desktop representation: a macOS Stats-style breakdown living
-// directly on our liquid glass — no nested boxes, just hairline
-// separators and small uppercase group captions, like macOS Settings.
-// The stat components are adapted from KStats (oowl/kstats, MIT — see
-// LICENSES/KStats-MIT.txt); the glass background, data layer and
-// configuration are this widget's own.
+// Full desktop representation, modeled on the macOS Tahoe liquid-glass
+// widget mockup: a host card with a live clock, then one glass section
+// card per metric (icon + title + mono percentage header, sparkline /
+// tiles / dotted breakdown rows inside). Stat components are adapted
+// from KStats (oowl/kstats, MIT — see LICENSES/KStats-MIT.txt); the
+// glass background, data layer and configuration are this widget's own.
 
 Item {
     id: view
@@ -30,6 +30,8 @@ Item {
         appearance: cfg.appearance
         accentColor: cfg.accentColor
     }
+
+    readonly property string monoFamily: "JetBrains Mono"
 
     // Per-metric accents, following the macOS Stats convention of one
     // signature color per metric instead of a single theme accent.
@@ -56,6 +58,20 @@ Item {
         return peak * 1.15
     }
 
+    // Live clock for the host card.
+    property string clockText: Qt.formatDateTime(new Date(), "HH:mm:ss")
+    property string dateText: Qt.formatDateTime(new Date(), "dddd, d MMM")
+
+    Timer {
+        interval: 1000
+        repeat: true
+        running: view.visible
+        onTriggered: {
+            view.clockText = Qt.formatDateTime(new Date(), "HH:mm:ss")
+            view.dateText = Qt.formatDateTime(new Date(), "dddd, d MMM")
+        }
+    }
+
     implicitWidth: 380
     implicitHeight: content.implicitHeight + content.anchors.margins * 2
     Layout.preferredWidth: implicitWidth
@@ -63,7 +79,7 @@ Item {
     Layout.minimumWidth: 320
     Layout.minimumHeight: 260
     Layout.maximumWidth: 520
-    Layout.maximumHeight: 1100
+    Layout.maximumHeight: 1200
     clip: true
 
     GlassBackground {
@@ -83,23 +99,43 @@ Item {
         realtimeRefraction: cfg.realtimeRefraction
     }
 
-    // Small uppercase group caption, macOS Settings style.
-    component GroupCaption: Text {
-        property string caption: ""
-        text: caption
-        color: colors.labelTertiary
-        font.family: "Inter"
-        font.pixelSize: 10
-        font.weight: Font.DemiBold
-        font.letterSpacing: 0.8
-        font.capitalization: Font.AllUppercase
-    }
+    // Section header row: monochrome icon, semibold title, mono value on
+    // the trailing edge — the pattern every glass card opens with.
+    component SectionHeader: RowLayout {
+        property string title
+        property string iconName
+        property string value
+        property color accent: colors.foreground
 
-    // Hairline separator between sections.
-    component Hairline: Rectangle {
         Layout.fillWidth: true
-        Layout.preferredHeight: 1
-        color: colors.separator
+        spacing: 8
+
+        Kirigami.Icon {
+            visible: iconName !== ""
+            source: iconName
+            isMask: true
+            color: colors.labelSecondary
+            Layout.preferredWidth: 16
+            Layout.preferredHeight: 16
+        }
+
+        Text {
+            text: title
+            color: colors.foreground
+            font.family: "Inter"
+            font.pixelSize: 14
+            font.weight: Font.DemiBold
+            Layout.fillWidth: true
+        }
+
+        Text {
+            visible: value !== ""
+            text: value
+            color: accent
+            font.family: view.monoFamily
+            font.pixelSize: 13
+            font.weight: Font.SemiBold
+        }
     }
 
     ColumnLayout {
@@ -108,178 +144,146 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
-        anchors.margins: 24
-        spacing: 16
+        anchors.margins: 20
+        spacing: 12
 
-        // ── Header ────────────────────────────────────────────────────
-        RowLayout {
+        // ── Host card ─────────────────────────────────────────────────
+        GlassCard {
             Layout.fillWidth: true
-            spacing: 8
 
-            Kirigami.Icon {
-                id: appIcon
-                Layout.preferredWidth: 20
-                Layout.preferredHeight: 20
-                source: Qt.resolvedUrl("icons/appicon.svg")
-            }
-
-            Text {
-                text: i18n("System Monitor")
-                color: colors.foreground
-                font.family: "Inter"
-                font.pixelSize: 16
-                font.weight: Font.DemiBold
+            RowLayout {
                 Layout.fillWidth: true
-            }
+                spacing: 12
 
-            Text {
-                visible: String(hub.hostname.value ?? "") !== ""
-                text: String(hub.hostname.value ?? "")
-                color: colors.labelTertiary
-                font.family: "Inter"
-                font.pixelSize: 11
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 3
+
+                    Text {
+                        text: String(hub.hostname.value ?? "…")
+                        color: colors.foreground
+                        font.family: "Inter"
+                        font.pixelSize: 19
+                        font.weight: Font.SemiBold
+                    }
+
+                    Text {
+                        text: i18n("Linux") + "  ·  " + String(hub.memTotal.formattedValue ?? "") + " " + i18n("RAM")
+                        color: colors.labelSecondary
+                        font.family: "Inter"
+                        font.pixelSize: 12
+                    }
+
+                    Text {
+                        visible: hub.cpuFreqAvailable
+                        text: i18n("Processor") + "  ·  " + String(hub.cpuFreq.formattedValue ?? "")
+                        color: colors.labelTertiary
+                        font.family: "Inter"
+                        font.pixelSize: 11
+                    }
+                }
+
+                ColumnLayout {
+                    spacing: 2
+
+                    Text {
+                        anchors.right: parent.right
+                        text: view.clockText
+                        color: colors.foreground
+                        font.family: view.monoFamily
+                        font.pixelSize: 22
+                        font.weight: Font.SemiBold
+                    }
+
+                    Text {
+                        anchors.right: parent.right
+                        text: view.dateText
+                        color: colors.labelSecondary
+                        font.family: "Inter"
+                        font.pixelSize: 12
+                    }
+                }
             }
         }
 
         // ── CPU ───────────────────────────────────────────────────────
-        RowLayout {
+        GlassCard {
             visible: cfg.showCpu
             Layout.fillWidth: true
-            spacing: 16
-
-            KStats.RingGauge {
-                Layout.preferredWidth: Kirigami.Units.gridUnit * 4
-                Layout.preferredHeight: Kirigami.Units.gridUnit * 4
-                value: hub.num(hub.cpuUsage.value)
-                label: i18n("CPU")
-                accentColor: view.cpuColor
-                trackColor: colors.controlFill
-                labelColor: colors.foreground
-                subLabelColor: colors.labelTertiary
-            }
 
             ColumnLayout {
                 Layout.fillWidth: true
-                spacing: 6
+                spacing: 10
 
-                Text {
-                    visible: hub.cpuFreqAvailable
-                    text: String(hub.cpuFreq.formattedValue ?? "")
-                    color: colors.foreground
-                    font.family: "Inter"
-                    font.pixelSize: 17
-                    font.weight: Font.DemiBold
-                    font.features: { "tnum": 1 }
+                SectionHeader {
+                    title: i18n("CPU")
+                    iconName: "cpu"
+                    value: view.pct(hub.num(hub.cpuUsage.value))
+                    accent: view.cpuColor
                 }
 
-                Text {
-                    visible: hub.cpuFreqAvailable
-                    text: i18n("Average frequency")
-                    color: colors.labelTertiary
-                    font.family: "Inter"
-                    font.pixelSize: 11
+                Rectangle {
+                    visible: cfg.showCpuGraph
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: Kirigami.Units.gridUnit * 3.2
+                    radius: 12
+                    color: view.meterBackdrop
+                    border.width: 1
+                    border.color: colors.separator
+
+                    KStats.Sparkline {
+                        anchors.fill: parent
+                        anchors.margins: 6
+                        samples: hub.cpuHistory
+                        autoSample: false
+                        maxValue: 100
+                        lineColor: view.cpuColor
+                        showFill: true
+                    }
                 }
 
-                KStats.DetailRow {
-                    visible: hub.cpuTempAvailable && cfg.showTemp
-                    label: i18n("Temperature")
-                    value: String(hub.cpuTemp.formattedValue ?? "")
+                CoreTiles {
+                    visible: cfg.showPerCore && hub.coreCount > 0
+                    Layout.fillWidth: true
+                    count: hub.coreCount
+                    sensorAt: hub.coreSensorAt
+                    fillColor: view.cpuColor
+                    trackColor: colors.controlFill
                     labelColor: colors.labelTertiary
-                    valueColor: colors.foreground
-                }
-
-                KStats.DetailRow {
-                    visible: hub.coreCount > 0
-                    label: i18n("Cores")
-                    value: i18np("%1 core", "%1 cores", hub.coreCount)
-                    labelColor: colors.labelTertiary
-                    valueColor: colors.foreground
                 }
             }
         }
-
-        Hairline { visible: cfg.showCpu }
-
-        // ── CPU usage history ─────────────────────────────────────────
-        ColumnLayout {
-            visible: cfg.showCpu && cfg.showCpuGraph
-            Layout.fillWidth: true
-            spacing: 8
-
-            GroupCaption { caption: i18n("Usage history") }
-
-            KStats.Sparkline {
-                Layout.fillWidth: true
-                Layout.preferredHeight: Kirigami.Units.gridUnit * 2.8
-                samples: hub.cpuHistory
-                autoSample: false
-                maxValue: 100
-                lineColor: view.cpuColor
-                showFill: true
-                showScale: true
-                scaleTicks: [100, 50, 0]
-                scaleSuffix: "%"
-                scaleColor: colors.labelTertiary
-            }
-        }
-
-        Hairline { visible: cfg.showCpu && cfg.showCpuGraph }
-
-        // ── CPU cores ─────────────────────────────────────────────────
-        ColumnLayout {
-            visible: cfg.showCpu && cfg.showPerCore && hub.coreCount > 0
-            Layout.fillWidth: true
-            spacing: 8
-
-            GroupCaption { caption: i18n("Per-core activity") }
-
-            KStats.CpuCoreBars {
-                Layout.fillWidth: true
-                Layout.preferredHeight: Kirigami.Units.gridUnit * 2.8
-                count: hub.coreCount
-                sensorAt: hub.coreSensorAt
-                refreshInterval: Math.max(1000, hub.updateInterval)
-                barColor: view.cpuColor
-                trackColor: colors.foreground
-                gridColor: colors.labelTertiary
-            }
-        }
-
-        Hairline { visible: cfg.showCpu && cfg.showPerCore && hub.coreCount > 0 && cfg.showMemory }
 
         // ── Memory ────────────────────────────────────────────────────
-        RowLayout {
+        GlassCard {
             visible: cfg.showMemory
             Layout.fillWidth: true
-            spacing: 16
-
-            KStats.RingGauge {
-                Layout.preferredWidth: Kirigami.Units.gridUnit * 4
-                Layout.preferredHeight: Kirigami.Units.gridUnit * 4
-                value: hub.memLevel * 100
-                label: i18n("RAM")
-                accentColor: view.memoryColor
-                trackColor: colors.controlFill
-                labelColor: colors.foreground
-                subLabelColor: colors.labelTertiary
-            }
 
             ColumnLayout {
                 Layout.fillWidth: true
-                spacing: 6
+                spacing: 8
+
+                SectionHeader {
+                    title: i18n("Memory")
+                    iconName: "media-memory"
+                    value: view.pct(hub.memLevel * 100)
+                    accent: view.memoryColor
+                }
 
                 KStats.DetailRow {
                     label: i18n("Used")
                     value: String(hub.memUsed.formattedValue ?? "")
-                    labelColor: colors.labelTertiary
+                    labelColor: colors.labelSecondary
                     valueColor: colors.foreground
+                    dotColor: colors.green
                 }
 
                 KStats.DetailRow {
-                    label: i18n("Total")
-                    value: String(hub.memTotal.formattedValue ?? "")
-                    labelColor: colors.labelTertiary
+                    label: i18n("Free")
+                    value: String(hub.memFree.formattedValue ?? "")
+                    labelColor: colors.labelSecondary
                     valueColor: colors.foreground
+                    dotColor: colors.labelTertiary
                 }
 
                 KStats.DetailRow {
@@ -287,115 +291,226 @@ Item {
                     label: i18n("Swap")
                     value: String(hub.swapUsed.formattedValue ?? "") + " / "
                            + String(hub.swapTotal.formattedValue ?? "")
-                    labelColor: colors.labelTertiary
+                    labelColor: colors.labelSecondary
                     valueColor: colors.foreground
+                    dotColor: colors.orange
                 }
             }
         }
 
-        Hairline { visible: cfg.showMemory && cfg.showNetwork }
-
         // ── Network ───────────────────────────────────────────────────
-        ColumnLayout {
+        GlassCard {
             visible: cfg.showNetwork
             Layout.fillWidth: true
-            spacing: 8
 
-            KStats.BarStat {
+            ColumnLayout {
                 Layout.fillWidth: true
-                label: i18n("Down")
-                value: String(hub.netDown.formattedValue ?? "")
-                valueSlot: "888.8 MiB/s"
-                percent: view.netDownMax > 0
-                         ? hub.num(hub.netDown.value) / view.netDownMax * 100 : 0
-                stretch: true
-                fixedLabelWidth: Kirigami.Units.gridUnit * 2.2
-                accentColor: view.netDownColor
-                valueColor: colors.foreground
-                meterColor: view.meterBackdrop
-                meterBorderColor: colors.separator
-            }
+                spacing: 8
 
-            KStats.BarStat {
-                Layout.fillWidth: true
-                label: i18n("Up")
-                value: String(hub.netUp.formattedValue ?? "")
-                valueSlot: "888.8 KiB/s"
-                percent: view.netUpMax > 0
-                         ? hub.num(hub.netUp.value) / view.netUpMax * 100 : 0
-                stretch: true
-                fixedLabelWidth: Kirigami.Units.gridUnit * 2.2
-                accentColor: view.netUpColor
-                valueColor: colors.foreground
-                meterColor: view.meterBackdrop
-                meterBorderColor: colors.separator
-            }
+                SectionHeader {
+                    title: i18n("Network")
+                    iconName: "network-wireless"
+                    value: ""
+                }
 
-            KStats.Sparkline {
-                visible: cfg.showNetGraph
-                Layout.fillWidth: true
-                Layout.preferredHeight: Kirigami.Units.gridUnit * 2.8
-                samples: hub.downHistory
-                autoSample: false
-                maxValue: view.netDownMax
-                lineColor: view.netDownColor
-                showFill: true
-                scaleColor: colors.labelTertiary
+                KStats.BarStat {
+                    Layout.fillWidth: true
+                    label: i18n("Down")
+                    value: String(hub.netDown.formattedValue ?? "")
+                    valueSlot: "888.8 MiB/s"
+                    percent: view.netDownMax > 0
+                             ? hub.num(hub.netDown.value) / view.netDownMax * 100 : 0
+                    stretch: true
+                    fixedLabelWidth: Kirigami.Units.gridUnit * 2.2
+                    accentColor: view.netDownColor
+                    valueColor: colors.foreground
+                    meterColor: view.meterBackdrop
+                    meterBorderColor: colors.separator
+                }
+
+                KStats.BarStat {
+                    Layout.fillWidth: true
+                    label: i18n("Up")
+                    value: String(hub.netUp.formattedValue ?? "")
+                    valueSlot: "888.8 KiB/s"
+                    percent: view.netUpMax > 0
+                             ? hub.num(hub.netUp.value) / view.netUpMax * 100 : 0
+                    stretch: true
+                    fixedLabelWidth: Kirigami.Units.gridUnit * 2.2
+                    accentColor: view.netUpColor
+                    valueColor: colors.foreground
+                    meterColor: view.meterBackdrop
+                    meterBorderColor: colors.separator
+                }
+
+                KStats.Sparkline {
+                    visible: cfg.showNetGraph
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: Kirigami.Units.gridUnit * 2.8
+                    samples: hub.downHistory
+                    autoSample: false
+                    maxValue: view.netDownMax
+                    lineColor: view.netDownColor
+                    showFill: true
+                    scaleColor: colors.labelTertiary
+                }
             }
         }
-
-        Hairline { visible: cfg.showNetwork && cfg.showDisk }
 
         // ── Disk ──────────────────────────────────────────────────────
-        ColumnLayout {
+        GlassCard {
             visible: cfg.showDisk
             Layout.fillWidth: true
-            spacing: 8
 
-            KStats.BarStat {
+            ColumnLayout {
                 Layout.fillWidth: true
-                label: i18n("Disk")
-                value: String(hub.diskUsed.formattedValue ?? "") + " / "
-                       + String(hub.diskTotal.formattedValue ?? "")
-                valueSlot: "888.8 GiB / 888.8 GiB"
-                percent: hub.num(hub.diskUsedPercent.value)
-                previewMode: "bar"
-                stretch: true
-                fixedLabelWidth: Kirigami.Units.gridUnit * 2.2
-                accentColor: colors.levelColor(hub.num(hub.diskUsedPercent.value) / 100)
-                valueColor: colors.foreground
-                meterColor: view.meterBackdrop
-                meterBorderColor: colors.separator
-            }
+                spacing: 8
 
-            KStats.DetailRow {
-                label: i18n("Read / Write")
-                value: String(hub.diskRead.formattedValue ?? "") + "  /  "
-                       + String(hub.diskWrite.formattedValue ?? "")
-                labelColor: colors.labelTertiary
-                valueColor: colors.foreground
+                SectionHeader {
+                    title: i18n("Disk")
+                    iconName: "drive-harddisk"
+                    value: view.pct(hub.num(hub.diskUsedPercent.value))
+                    accent: colors.levelColor(hub.num(hub.diskUsedPercent.value) / 100)
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 12
+
+                    ColumnLayout {
+                        spacing: 1
+
+                        Text {
+                            text: i18n("Used")
+                            color: colors.labelTertiary
+                            font.family: "Inter"
+                            font.pixelSize: 11
+                        }
+
+                        Text {
+                            text: String(hub.diskUsed.formattedValue ?? "")
+                            color: colors.foreground
+                            font.family: view.monoFamily
+                            font.pixelSize: 13
+                            font.weight: Font.Medium
+                        }
+                    }
+
+                    Item { Layout.fillWidth: true }
+
+                    ColumnLayout {
+                        spacing: 1
+
+                        Text {
+                            anchors.right: parent.right
+                            text: i18n("Total")
+                            color: colors.labelTertiary
+                            font.family: "Inter"
+                            font.pixelSize: 11
+                        }
+
+                        Text {
+                            anchors.right: parent.right
+                            text: String(hub.diskTotal.formattedValue ?? "")
+                            color: colors.foreground
+                            font.family: view.monoFamily
+                            font.pixelSize: 13
+                            font.weight: Font.Medium
+                        }
+                    }
+                }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 10
+                    radius: 5
+                    color: colors.controlFill
+
+                    Rectangle {
+                        anchors.left: parent.left
+                        anchors.top: parent.top
+                        anchors.bottom: parent.bottom
+                        width: parent.width * Math.max(0, Math.min(1, hub.num(hub.diskUsedPercent.value) / 100))
+                        radius: 5
+                        color: colors.levelColor(hub.num(hub.diskUsedPercent.value) / 100)
+
+                        Behavior on width {
+                            NumberAnimation { duration: 500; easing.type: Easing.OutCubic }
+                        }
+                    }
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+
+                    Text {
+                        text: "↗  R:  " + String(hub.diskRead.formattedValue ?? "")
+                        color: colors.labelSecondary
+                        font.family: view.monoFamily
+                        font.pixelSize: 11
+                    }
+
+                    Item { Layout.fillWidth: true }
+
+                    Text {
+                        text: "↘  W:  " + String(hub.diskWrite.formattedValue ?? "")
+                        color: colors.labelSecondary
+                        font.family: view.monoFamily
+                        font.pixelSize: 11
+                    }
+                }
             }
         }
-
-        Hairline { visible: cfg.showDisk && view.showGpu }
 
         // ── GPU ───────────────────────────────────────────────────────
-        KStats.BarStat {
+        GlassCard {
             visible: view.showGpu
             Layout.fillWidth: true
-            label: i18n("GPU")
-            value: String(hub.gpuVramUsed.formattedValue ?? "") + " / "
-                   + String(hub.gpuVramTotal.formattedValue ?? "")
-            valueSlot: "888.8 GiB / 888.8 GiB"
-            percent: hub.num(hub.gpuUsage.value)
-            previewMode: "bar"
-            stretch: true
-            fixedLabelWidth: Kirigami.Units.gridUnit * 2.2
-            accentColor: view.gpuColor
-            valueColor: colors.foreground
-            meterColor: view.meterBackdrop
-            meterBorderColor: colors.separator
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 8
+
+                SectionHeader {
+                    title: i18n("GPU")
+                    iconName: "video-display"
+                    value: view.pct(hub.num(hub.gpuUsage.value))
+                    accent: view.gpuColor
+                }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 10
+                    radius: 5
+                    color: colors.controlFill
+
+                    Rectangle {
+                        anchors.left: parent.left
+                        anchors.top: parent.top
+                        anchors.bottom: parent.bottom
+                        width: parent.width * Math.max(0, Math.min(1, hub.num(hub.gpuUsage.value) / 100))
+                        radius: 5
+                        color: view.gpuColor
+
+                        Behavior on width {
+                            NumberAnimation { duration: 500; easing.type: Easing.OutCubic }
+                        }
+                    }
+                }
+
+                KStats.DetailRow {
+                    label: i18n("VRAM")
+                    value: String(hub.gpuVramUsed.formattedValue ?? "") + " / "
+                           + String(hub.gpuVramTotal.formattedValue ?? "")
+                    labelColor: colors.labelSecondary
+                    valueColor: colors.foreground
+                }
+            }
         }
+    }
+
+    function pct(v) {
+        return Math.max(0, Math.min(100, Math.round(v))) + "%"
     }
 
     // GPU section shows only when the daemon actually exposes GPU sensors.

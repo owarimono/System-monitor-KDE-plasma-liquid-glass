@@ -30,20 +30,21 @@ disk with usage-color ramp and an auto-detected GPU section.</i></p>
   and blurred through a custom shader pipeline (crop → separable Gaussian →
   compose), with Snell-style edge refraction, chromatic aberration, a
   mouse-following sheen and ordered-noise dithering to prevent banding.
-- **macOS materials** — iOS squircle silhouette (superellipse), light/dark
-  appearance, glass or solid material, Apple system palette, accent color
-  picker.
-- **Stats-app stat cards** — the numbers, rings, meters and charts follow
-  the macOS Stats convention (components adapted from KStats, MIT): per-
-  metric accent colors, tabular numerals that never jitter, sparkline
-  meters.
+- **macOS materials** — iOS squircle silhouette (superellipse), Tahoe-style
+  glass section cards, light/dark appearance, glass or solid material,
+  Apple system palette, accent color picker.
+- **Stats-app stat cards** — one glass card per metric with an icon,
+  semibold title and mono percentage header (components adapted from
+  KStats, MIT): per-metric accent colors, JetBrains Mono numerals,
+  sparkline meters, per-core tiles, dotted breakdown rows.
+- **Host card** — machine name, OS/RAM summary and a live JetBrains Mono
+  clock, like a macOS widget header.
 - **Sections**
-  - CPU — activity ring, average frequency, temperature, per-core bars and
-    a rolling usage graph
-  - Memory — usage bar with swap indicator
-  - Network — live download/upload rates with throughput sparklines
-  - Disk — usage with green/orange/red ramp and read/write rates
-  - GPU — shown automatically when the daemon exposes GPU sensors
+  - CPU — usage sparkline in an inset panel and numbered per-core tiles
+  - Memory — Used / Free / Swap breakdown with color dots
+  - Network — eased Down/Up meters with throughput sparkline
+  - Disk — Used/Total columns, usage-ramp progress bar and mono R/W rates
+  - GPU — usage bar and VRAM, shown automatically when sensors exist
 - **Panel mode** — a compact glass pill with the CPU ring for panel form
   factors.
 - **Zero-polling data** — values come from KDE's `ksystemstats` daemon; the
@@ -153,11 +154,15 @@ requires the shader toolchain — only editing a `.frag` file does. See
 
 ## Credits
 
-- The stat UI (ring gauges, bar rows with sparkline meters, history
-  charts, per-core bars, tabular-number typography) is adapted from
+- The stat UI (sparkline charts, bar meters, detail rows, fixed-slot
+  numeric typography) is adapted from
   [KStats](https://github.com/oowl/kstats) by Jun Ouyang — MIT licensed,
   see `LICENSES/KStats-MIT.txt`. KStats is itself a KDE widget inspired by
   the macOS [Stats](https://github.com/exelban/stats) menu-bar app.
+- Bundled fonts: [Inter](https://rsms.me/inter/) and
+  [JetBrains Mono](https://www.jetbrains.com/lp/mono/) — both SIL OFL 1.1
+  (`LICENSES/Inter-OFL.txt`, `LICENSES/JetBrainsMono-OFL.txt`); Inter is
+  the closest open match to Apple's SF Pro, JetBrains Mono to SF Mono.
 - Design inspired by the excellent
   [liquidglass-kde-widgets](https://github.com/jaxparrow07/liquidglass-kde-widgets)
   by jaxparrow07 — this project is an independent implementation (different

@@ -71,6 +71,10 @@ Item {
         sensorId: "memory/physical/total"
         updateRateLimit: hub.updateInterval
     }
+    readonly property var memFree: Sensors.Sensor {
+        sensorId: "memory/physical/free"
+        updateRateLimit: hub.updateInterval
+    }
     readonly property var swapUsed: Sensors.Sensor {
         sensorId: "memory/swap/used"
         updateRateLimit: hub.updateInterval

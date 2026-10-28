@@ -1,8 +1,9 @@
 // Adapted from KStats — https://github.com/oowl/kstats
 // MIT License — Copyright (c) 2026 Jun Ouyang (see LICENSES/KStats-MIT.txt)
-// Modifications for System Monitor (Glass): label uses the small Inter
-// font and the value is semibold with tabular figures; colors are
-// exposed as properties so the glass card themes them from its palette.
+// Modifications for System Monitor (Glass): optional colored leading dot
+// (macOS memory-breakdown style), small Inter label, semibold JetBrains
+// Mono value; colors are exposed as properties so the glass card themes
+// them from its palette.
 
 import QtQuick
 import QtQuick.Controls as Controls
@@ -17,9 +18,18 @@ RowLayout {
     property string value
     property color labelColor: Kirigami.Theme.disabledTextColor
     property color valueColor: Kirigami.Theme.textColor
+    property color dotColor: "transparent"
 
     Layout.fillWidth: true
     spacing: Kirigami.Units.smallSpacing
+
+    Rectangle {
+        visible: row.dotColor.a > 0
+        Layout.preferredWidth: 8
+        Layout.preferredHeight: 8
+        radius: 4
+        color: row.dotColor
+    }
 
     Controls.Label {
         text: row.label
@@ -35,10 +45,9 @@ RowLayout {
         color: row.valueColor
         horizontalAlignment: Text.AlignRight
         elide: Text.ElideMiddle
-        font.family: "Inter"
+        font.family: "JetBrains Mono"
         font.pixelSize: Kirigami.Theme.smallFont.pixelSize
         font.weight: Font.DemiBold
-        font.features: { "tnum": 1 }
         Layout.maximumWidth: Kirigami.Units.gridUnit * 12
     }
 }
