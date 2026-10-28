@@ -28,7 +28,7 @@ QtObject {
 
     // ── Glass material ────────────────────────────────────────────────
     readonly property color glassTint: isLight ? "#ffffff" : "#000000"
-    readonly property real glassTintAlpha: isLight ? 0.55 : 0.30
+    readonly property real glassTintAlpha: isLight ? 0.50 : 0.24
     readonly property real glassFallbackOpacity: isLight ? 0.72 : 0.55
 
     // ── Solid material ────────────────────────────────────────────────
