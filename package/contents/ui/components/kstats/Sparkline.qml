@@ -4,6 +4,9 @@
 //   - maxValue property: samples are normalized against maxValue instead of
 //     a hard-coded 0..100 percent clamp, so byte-rate series (network)
 //     plot correctly. Scale ticks and labels follow maxValue.
+//   - the line is smoothed with quadratic midpoints and the fill fades
+//     through a vertical gradient (straight segments + flat fill in
+//     upstream); scale text uses the bundled Inter font.
 
 import QtQuick
 
@@ -64,7 +67,7 @@ Canvas {
 
         var ceiling = Math.max(1, spark.maxValue);
         var fontSize = Math.max(9, Kirigami.Theme.smallFont.pixelSize - 1);
-        ctx.font = fontSize + "px sans-serif";
+        ctx.font = fontSize + "px Inter, sans-serif";
 
         var leftInset = 0;
         if (showScale) {
@@ -115,18 +118,41 @@ Canvas {
             }
         }
 
-        if (showFill) {
-            ctx.fillStyle = lineColor;
-            ctx.globalAlpha = 0.16;
+        // Smooth the series with quadratic midpoints, then fade the fill
+        // through a vertical gradient.
+        function trace() {
             ctx.beginPath();
-            ctx.moveTo(plotLeft + plotWidth - (samples.length - 1) * step, plotTop + plotHeight);
-            for (var fillIndex = 0; fillIndex < samples.length; fillIndex++) {
-                var fillX = plotLeft + plotWidth - (samples.length - 1 - fillIndex) * step;
-                var fillY = plotTop + plotHeight - (samples[fillIndex] / ceiling * plotHeight);
-                ctx.lineTo(fillX, fillY);
+            var lastX = plotLeft + plotWidth - (samples.length - 1) * step;
+            var lastY = plotTop + plotHeight - (samples[0] / ceiling * plotHeight);
+            ctx.moveTo(lastX, lastY);
+            for (var i = 0; i < samples.length; i++) {
+                var x = plotLeft + plotWidth - (samples.length - 1 - i) * step;
+                var y = plotTop + plotHeight - (samples[i] / ceiling * plotHeight);
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else if (i < samples.length - 1) {
+                    var nx = plotLeft + plotWidth - (samples.length - 2 - i) * step;
+                    var ny = plotTop + plotHeight - (samples[i + 1] / ceiling * plotHeight);
+                    ctx.quadraticCurveTo(x, y, (x + nx) / 2, (y + ny) / 2);
+                } else {
+                    ctx.lineTo(x, y);
+                }
             }
+        }
+
+        if (showFill) {
+            trace();
+            // trace() ends at the leftmost sample; walk the baseline back
+            // to the right edge, then close up to the path start.
+            ctx.lineTo(plotLeft, plotTop + plotHeight);
             ctx.lineTo(plotLeft + plotWidth, plotTop + plotHeight);
             ctx.closePath();
+            var fillGrad = ctx.createLinearGradient(0, plotTop, 0, plotTop + plotHeight);
+            fillGrad.addColorStop(0, Qt.rgba(lineColor.r, lineColor.g,
+                                             lineColor.b, 0.32).toString());
+            fillGrad.addColorStop(1, Qt.rgba(lineColor.r, lineColor.g,
+                                             lineColor.b, 0).toString());
+            ctx.fillStyle = fillGrad;
             ctx.fill();
         }
 
@@ -135,18 +161,7 @@ Canvas {
         ctx.lineCap = "round";
         ctx.strokeStyle = lineColor;
         ctx.globalAlpha = 0.9;
-        ctx.beginPath();
-
-        for (var i = 0; i < samples.length; i++) {
-            var x = plotLeft + plotWidth - (samples.length - 1 - i) * step;
-            var y = plotTop + plotHeight - (samples[i] / ceiling * plotHeight);
-            if (i === 0) {
-                ctx.moveTo(x, y);
-            } else {
-                ctx.lineTo(x, y);
-            }
-        }
-
+        trace();
         ctx.stroke();
     }
 }

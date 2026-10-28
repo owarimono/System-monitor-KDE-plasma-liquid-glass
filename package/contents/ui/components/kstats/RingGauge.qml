@@ -7,8 +7,10 @@
 //   - center text scales with the ring size — KStats used fixed theme
 //     font sizes that overflowed smaller rings
 //   - the drawn value eases toward the target (600ms, OutCubic) so the
-//     gauge motion feels like Apple's rings; colors are overridden
-//     through the existing properties.
+//     gauge motion feels like Apple's rings
+//   - the value arc strokes through a linear gradient (accent -> lighter)
+//     with a soft glow, Apple activity-ring style; colors are overridden
+//     through the existing properties; text uses the bundled Inter font.
 
 import QtQuick
 import QtQuick.Controls as Controls
@@ -21,6 +23,7 @@ Item {
     property real value: 0
     property string label: ""
     property color accentColor: Kirigami.Theme.focusColor
+    property color accentColor2: Qt.lighter(accentColor, 1.3)
     property color trackColor: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.14)
     property color labelColor: Kirigami.Theme.textColor
     property color subLabelColor: Kirigami.Theme.disabledTextColor
@@ -76,10 +79,18 @@ Item {
             ctx.arc(centerX, centerY, radius, 0, Math.PI * 2, false);
             ctx.stroke();
 
-            ctx.strokeStyle = root.accentColor;
+            var grad = ctx.createLinearGradient(centerX - radius, centerY - radius,
+                                                centerX + radius, centerY + radius);
+            grad.addColorStop(0, String(root.accentColor));
+            grad.addColorStop(1, String(root.accentColor2));
+            ctx.strokeStyle = grad;
+            ctx.shadowColor = String(Qt.rgba(root.accentColor.r, root.accentColor.g,
+                                             root.accentColor.b, 0.45));
+            ctx.shadowBlur = 6;
             ctx.beginPath();
             ctx.arc(centerX, centerY, radius, startAngle, endAngle, false);
             ctx.stroke();
+            ctx.shadowBlur = 0;
         }
     }
 
@@ -91,6 +102,7 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             text: Math.round(root.shown) + "%"
             color: root.labelColor
+            font.family: "Inter"
             font.pixelSize: Math.max(11, root.width * 0.21)
             font.weight: Font.DemiBold
         }
@@ -100,6 +112,7 @@ Item {
             visible: root.label.length > 0
             text: root.label
             color: root.subLabelColor
+            font.family: "Inter"
             font.pixelSize: Math.max(8, root.width * 0.13)
             font.weight: Font.Medium
         }

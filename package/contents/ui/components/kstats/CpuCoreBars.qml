@@ -76,7 +76,7 @@ Rectangle {
             }
 
             var fontSize = Math.max(9, Kirigami.Theme.smallFont.pixelSize - 1);
-            ctx.font = fontSize + "px sans-serif";
+            ctx.font = fontSize + "px Inter, sans-serif";
 
             var labelWidth = Math.ceil(ctx.measureText("100%").width + Kirigami.Units.smallSpacing);
             var labelBottom = root.count > 0 ? fontSize + 2 : 0;

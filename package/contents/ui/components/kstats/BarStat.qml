@@ -12,7 +12,8 @@
 //     misaligned rows in a full-width card.
 //   - fixedLabelWidth aligns the label column across sibling rows.
 //   - Meter colors (track fill, border) are exposed as properties so the
-//     glass card can theme them from its own palette.
+//     glass card can theme them from its own palette; meter corners are
+//     slightly rounder and text uses the bundled Inter font.
 
 import QtQuick
 import QtQuick.Controls as Controls
@@ -71,6 +72,7 @@ RowLayout {
         color: stat.accentColor
         elide: Text.ElideRight
         font.pixelSize: stat.labelPixelSize > 0 ? stat.labelPixelSize : Kirigami.Theme.smallFont.pixelSize
+        font.family: "Inter"
         font.weight: Font.DemiBold
         horizontalAlignment: Text.AlignRight
         Layout.minimumWidth: stat.labelWidth
@@ -86,7 +88,7 @@ RowLayout {
         Layout.preferredWidth: stat.stretch ? -1 : stat.previewWidth
         Layout.maximumWidth: stat.stretch ? Infinity : stat.previewWidth
         Layout.preferredHeight: Math.max(Kirigami.Units.gridUnit * 0.9, stat.height - Kirigami.Units.smallSpacing)
-        radius: 2
+        radius: 3
         color: stat.meterColor
         border.width: 1
         border.color: stat.meterBorderColor
@@ -130,6 +132,8 @@ RowLayout {
         color: stat.valueColor
         elide: Text.ElideRight
         font.pixelSize: stat.valuePixelSize > 0 ? stat.valuePixelSize : Kirigami.Theme.smallFont.pixelSize
+        font.family: "Inter"
+        font.weight: Font.Medium
         font.features: { "tnum": 1 }
         horizontalAlignment: Text.AlignRight
         Layout.minimumWidth: stat.valueWidth
