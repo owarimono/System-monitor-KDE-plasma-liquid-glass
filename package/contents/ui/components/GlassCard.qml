@@ -21,16 +21,19 @@ Rectangle {
         GradientStop { position: 1.0; color: colors.cardFillBottom }
     }
 
-    // Crisp highlight along the top edge.
+    // Soft top luminance: fades out over a few pixels instead of a crisp
+    // 1px line, which read as a floating stripe over the translucent fill.
     Rectangle {
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.topMargin: 1
-        anchors.leftMargin: radius
-        anchors.rightMargin: radius
-        height: 1
-        color: colors.cardHighlight
+        anchors.leftMargin: 8
+        anchors.rightMargin: 8
+        height: 6
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: colors.cardHighlight }
+            GradientStop { position: 1.0; color: "transparent" }
+        }
     }
 
     ColumnLayout {
