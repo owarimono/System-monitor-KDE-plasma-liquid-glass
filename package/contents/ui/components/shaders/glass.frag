@@ -14,7 +14,7 @@
 //      and bottom, plus a crisp 1px inner highlight along the lit rim
 //   6. Inner edge stroke: an Apple-style light outline hugging the whole
 //      silhouette (strongest at the top, faintest at the bottom)
-//   7. Diagonal top sheen, mouse-following sheen, bottom shade
+//   7. Mouse-following sheen and a bottom shade
 //   8. Ordered-noise dithering to kill banding on the blurred gradient
 //
 // Output is premultiplied alpha (Qt Quick scene graph convention).
@@ -33,7 +33,6 @@ layout(std140, binding = 0) uniform buf {
     float uChroma;      // chromatic aberration strength, 0..1
     float uSpec;        // specular border strength, 0..1
     float uStroke;      // inner edge stroke strength, 0..1
-    float uSheen;       // diagonal top sheen strength, 0..1
     vec2  uMouse;       // mouse position in UV, (-1,-1) when not hovering
     float uMouseFade;   // 0..1 sheen fade
     float uNoise;       // dithering amplitude (e.g. 0.006)
@@ -101,6 +100,7 @@ void main()
     // alive instead of gray.
     float luma = dot(col, vec3(0.2126, 0.7152, 0.0722));
     col = clamp(mix(vec3(luma), col, 1.14), 0.0, 1.0);
+    col = clamp(col * 1.10 + 0.015, 0.0, 1.0);   // glass luminosity
     col = mix(col, uTint.rgb, uTint.a);
 
     // --- specular border -------------------------------------------------
@@ -116,10 +116,6 @@ void main()
     float strokeBand = 1.0 - smoothstep(0.0, 1.6, fs);
     float stroke = strokeBand * (0.42 * topFacing + 0.20 * leftFacing + 0.08 * bottomFacing + 0.06);
     col += stroke * uStroke;
-
-    // Diagonal top sheen — the soft light wash across the upper glass.
-    float sheenGrad = clamp(1.0 - (qt_TexCoord0.y * 1.6 + (0.35 - qt_TexCoord0.x) * 0.5), 0.0, 1.0);
-    col += sheenGrad * sheenGrad * uSheen;
 
     // --- mouse-following sheen -------------------------------------------
     if (uMouseFade > 0.0 && uMouse.x >= 0.0) {

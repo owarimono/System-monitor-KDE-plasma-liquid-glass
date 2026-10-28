@@ -211,7 +211,7 @@ Item {
 
                 SectionHeader {
                     title: i18n("CPU")
-                    iconName: Qt.resolvedUrl("../icons/sf/cpu.svg")
+                    iconName: Qt.resolvedUrl("icons/sf/cpu.svg")
                     value: view.pct(hub.num(hub.cpuUsage.value))
                     valueColor: colors.accent
                 }
@@ -259,7 +259,7 @@ Item {
 
                 SectionHeader {
                     title: i18n("Memory")
-                    iconName: Qt.resolvedUrl("../icons/sf/memory.svg")
+                    iconName: Qt.resolvedUrl("icons/sf/memory.svg")
                     value: view.pct(hub.memLevel * 100)
                     valueColor: colors.accent
                 }
@@ -303,7 +303,7 @@ Item {
 
                 SectionHeader {
                     title: i18n("Network")
-                    iconName: Qt.resolvedUrl("../icons/sf/network.svg")
+                    iconName: Qt.resolvedUrl("icons/sf/network.svg")
                 }
 
                 // Transparent rows: label + bare sparkline + mono rate,
@@ -395,7 +395,7 @@ Item {
 
                 SectionHeader {
                     title: i18n("Disk")
-                    iconName: Qt.resolvedUrl("../icons/sf/disk.svg")
+                    iconName: Qt.resolvedUrl("icons/sf/disk.svg")
                     value: view.pct(hub.num(hub.diskUsedPercent.value))
                     valueColor: colors.levelColor(hub.num(hub.diskUsedPercent.value) / 100)
                 }
@@ -502,7 +502,7 @@ Item {
 
                 SectionHeader {
                     title: i18n("GPU")
-                    iconName: Qt.resolvedUrl("../icons/sf/gpu.svg")
+                    iconName: Qt.resolvedUrl("icons/sf/gpu.svg")
                 }
 
                 Repeater {

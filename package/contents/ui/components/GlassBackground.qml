@@ -31,13 +31,12 @@ Item {
     property real tintAlpha: 0.10
     property real blurRadius: 24            // widget px, 0 = crisp
     property bool refraction: true
-    property real edgeBand: 28              // refractive rim width, px
-    property real refractionStrength: 22    // max rim displacement, px
+    property real edgeBand: 30              // refractive rim width, px
+    property real refractionStrength: 26    // max rim displacement, px
     property real chromaStrength: 0.08      // chromatic aberration, 0..1
     property bool specular: true
     property real specStrength: 0.9
     property real edgeStroke: 1.0           // Apple-style inner outline, 0..1
-    property real topSheen: 0.05            // diagonal top light wash, 0..1
     property bool realtimeRefraction: false
 
     // ── Solid panel mode (no wallpaper sampling) ──────────────────────
@@ -313,7 +312,6 @@ Item {
         property real uChroma: glass.solidMode ? 0.0 : glass.chromaStrength
         property real uSpec: glass.specular ? glass.specStrength : 0.0
         property real uStroke: glass.specular ? glass.edgeStroke : 0.0
-        property real uSheen: glass.solidMode ? glass.topSheen * 0.5 : glass.topSheen
         property vector2d uMouse: Qt.vector2d(glass._mouseU, glass._mouseV)
         property real uMouseFade: glass._mouseFade
         property real uNoise: 0.006

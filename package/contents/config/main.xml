@@ -87,7 +87,7 @@
       <label>Strength of the frosted-glass blur in pixels.</label>
       <min>0</min>
       <max>48</max>
-      <default>24</default>
+      <default>28</default>
     </entry>
     <entry name="refraction" type="Bool">
       <label>Enable the refractive edge of the liquid glass.</label>

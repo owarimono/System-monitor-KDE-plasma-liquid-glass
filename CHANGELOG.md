@@ -48,6 +48,12 @@ and the project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- Removed the diagonal top sheen that read as a white stain over the
+  host card; the glass instead gains a luminosity lift (brightness +
+  saturation) so dark wallpapers glow through the material.
+- Section icons load reliably: white-stroke SVGs rendered as plain
+  images (Kirigami isMask silently failed on several), and the paths
+  were fixed after the Image switch.
 - The glass silhouette is now an exact rounded-rect SDF — the previous
   superellipse swelled with widget height, reading as huge round corners.
   Corner radius is configurable (8–40 px, default 20) in the appearance
