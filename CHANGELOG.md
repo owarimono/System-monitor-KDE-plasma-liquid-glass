@@ -25,6 +25,17 @@ and the project adheres to [Semantic Versioning](https://semver.org/).
   `valueSlot`/`meterWidth` extensions for wider value strings and meters
   (upstream adaptations, documented in the file headers).
 
+### Fixed
+
+- Stat cards now size to their content — the fixed card heights taken
+  from KStats' dropdown made the detail rows overflow onto neighbouring
+  cards.
+- Ring gauge text scales with the ring size, so the percent/label no
+  longer clip on smaller rings; ring values ease instead of jumping.
+- Network/disk/GPU meter rows stretch to the card width with an aligned
+  label column and a dark meter backdrop, keeping the colored sparklines
+  readable on any glass tint.
+
 ## [0.1.0] - 2026-10-28
 
 ### Added
