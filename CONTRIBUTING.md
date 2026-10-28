@@ -13,10 +13,14 @@ package/                    the Plasma/Applet package (what gets installed)
     main.qml                PlasmoidItem root: picks representation
     SystemMonitorView.qml   full desktop card
     CompactPanel.qml        compact panel pill
-    components/             reusable pieces (glass background, sensors, gauges)
+    components/             this widget's own pieces (glass background,
+                            sensors, palette, compact ring)
+      kstats/               stat components adapted from oowl/kstats
+                            (MIT — headers list the modifications)
       shaders/*.frag        GLSL sources — compiled to .qsb and committed
     config/                 configuration dialog pages
 docs/                       screenshots
+LICENSES/                   third-party license texts (KStats-MIT.txt)
 build-shaders.sh            .frag → .qsb baker (qt6-shadertools)
 install.sh                  install/upgrade + optional plasmashell restart
 package.sh                  build a .plasmoid zip into dist/

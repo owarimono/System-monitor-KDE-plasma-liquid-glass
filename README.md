@@ -33,6 +33,10 @@ disk with usage-color ramp and an auto-detected GPU section.</i></p>
 - **macOS materials** — iOS squircle silhouette (superellipse), light/dark
   appearance, glass or solid material, Apple system palette, accent color
   picker.
+- **Stats-app stat cards** — the numbers, rings, meters and charts follow
+  the macOS Stats convention (components adapted from KStats, MIT): per-
+  metric accent colors, tabular numerals that never jitter, sparkline
+  meters.
 - **Sections**
   - CPU — activity ring, average frequency, temperature, per-core bars and
     a rolling usage graph
@@ -149,6 +153,11 @@ requires the shader toolchain — only editing a `.frag` file does. See
 
 ## Credits
 
+- The stat UI (ring gauges, bar rows with sparkline meters, history
+  charts, per-core bars, tabular-number typography) is adapted from
+  [KStats](https://github.com/oowl/kstats) by Jun Ouyang — MIT licensed,
+  see `LICENSES/KStats-MIT.txt`. KStats is itself a KDE widget inspired by
+  the macOS [Stats](https://github.com/exelban/stats) menu-bar app.
 - Design inspired by the excellent
   [liquidglass-kde-widgets](https://github.com/jaxparrow07/liquidglass-kde-widgets)
   by jaxparrow07 — this project is an independent implementation (different
