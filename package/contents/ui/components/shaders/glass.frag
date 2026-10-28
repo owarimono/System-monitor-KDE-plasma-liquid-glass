@@ -94,7 +94,12 @@ void main()
         col = texture(uBackdrop, baseUV + n * refractPx / uSize).rgb;
     }
 
-    // --- tint ------------------------------------------------------------
+    // --- tint + vibrancy -------------------------------------------------
+    // macOS vibrancy: the blurred backdrop keeps its colors but gains a
+    // touch of saturation, which is what makes Apple's materials feel
+    // alive instead of gray.
+    float luma = dot(col, vec3(0.2126, 0.7152, 0.0722));
+    col = clamp(mix(vec3(luma), col, 1.14), 0.0, 1.0);
     col = mix(col, uTint.rgb, uTint.a);
 
     // --- specular border -------------------------------------------------
