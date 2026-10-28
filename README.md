@@ -1,4 +1,4 @@
-# System Monitor (Glass) for KDE Plasma
+# System Monitor — KDE Plasma Liquid Glass
 
 A macOS-style system monitor widget for KDE Plasma 6. It renders your CPU,
 memory, network, disk and GPU inside a *liquid glass* card — a real-time
@@ -67,7 +67,7 @@ disk with usage-color ramp and an auto-detected GPU section.</i></p>
 ### Option 1 — install script (from the repo)
 
 ```bash
-git clone https://github.com/owarimono/system-monitor-kde.git
+git clone https://github.com/owarimono/System-monitor-KDE-plasma-liquid-glass.git
 cd system-monitor-kde
 ./install.sh
 ```
@@ -75,7 +75,7 @@ cd system-monitor-kde
 ### Option 2 — .plasmoid bundle
 
 Grab `SystemMonitor-Glass-v*.plasmoid` from
-[Releases](https://github.com/owarimono/system-monitor-kde/releases) (or run
+[Releases](https://github.com/owarimono/System-monitor-KDE-plasma-liquid-glass/releases) (or run
 `./package.sh`), then in Plasma: right-click desktop → *Add Widgets…* →
 *Get New Widgets…* → *Install Widget From Local File…*.
 

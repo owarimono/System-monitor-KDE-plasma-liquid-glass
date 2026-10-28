@@ -7,7 +7,7 @@
                 "Name": "owarimono"
             }
         ],
-        "BugReportUrl": "https://github.com/owarimono/system-monitor-kde/issues",
+        "BugReportUrl": "https://github.com/owarimono/System-monitor-KDE-plasma-liquid-glass/issues",
         "Category": "System Information",
         "Description": "A macOS-style system monitor widget: liquid glass background, activity rings, rolling graphs for CPU, memory, network, disk and GPU.",
         "Description[fa]": "وجیت نمایشگر منابع سیستم با ظاهر macOS: پس‌زمینه شیشه‌ای، حلقه‌های اکتیویتی و نمودار زنده برای CPU، حافظه، شبکه، دیسک و GPU.",
@@ -18,7 +18,7 @@
         "Name": "System Monitor (Glass)",
         "Name[fa]": "نمایشگر سیستم (شیشه‌ای)",
         "Version": "0.3.0",
-        "Website": "https://github.com/owarimono/system-monitor-kde"
+        "Website": "https://github.com/owarimono/System-monitor-KDE-plasma-liquid-glass"
     },
     "X-Plasma-API-Minimum-Version": "6.0"
 }
