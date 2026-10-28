@@ -60,7 +60,6 @@ Item {
                         anchors.left: parent.left
                         anchors.right: parent.right
                         anchors.bottom: parent.bottom
-                        Component.onCompleted: console.log("FILLDBG", index, "usage=", cell.usage, "fillLevel=", cell.fillLevel, "tileH=", parent.height)
                         // Keep a visible sliver when a core is active but
                         // near-idle, so tiles never read as empty boxes.
                         height: Math.max(cell.usage > 0.001 ? 4 : 0,
