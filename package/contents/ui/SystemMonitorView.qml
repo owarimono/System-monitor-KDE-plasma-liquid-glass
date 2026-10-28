@@ -74,8 +74,7 @@ Item {
 
     GlassBackground {
         anchors.fill: parent
-        radius: 22
-        roundness: 5.5
+        radius: cfg.cornerRadius
 
         tint: colors.glassTint
         tintAlpha: colors.glassTintAlpha
@@ -100,13 +99,14 @@ Item {
         Layout.fillWidth: true
         spacing: 8
 
-        Kirigami.Icon {
-            visible: iconName !== ""
+        Image {
+            visible: source !== ""
             source: iconName
-            isMask: true
-            color: colors.foreground
+            sourceSize: Qt.size(17, 17)
             Layout.preferredWidth: 17
             Layout.preferredHeight: 17
+            fillMode: Image.PreserveAspectFit
+            antialiasing: true
         }
 
         Text {
@@ -153,7 +153,7 @@ Item {
                         text: String(hub.hostname.value ?? "…")
                         color: colors.foreground
                         font.family: "Inter"
-                        font.pixelSize: 21
+                        font.pixelSize: 23
                         font.weight: Font.Bold
                     }
 
@@ -175,10 +175,11 @@ Item {
                 }
 
                 ColumnLayout {
+                    Layout.fillWidth: true
                     Layout.alignment: Qt.AlignTop
 
                     Text {
-                        Layout.alignment: Qt.AlignRight
+                        Layout.fillWidth: true
                         horizontalAlignment: Text.AlignRight
                         text: view.clockText
                         color: colors.foreground
@@ -188,7 +189,7 @@ Item {
                     }
 
                     Text {
-                        Layout.alignment: Qt.AlignRight
+                        Layout.fillWidth: true
                         horizontalAlignment: Text.AlignRight
                         text: view.dateText
                         color: colors.labelSecondary
@@ -305,34 +306,68 @@ Item {
                     iconName: Qt.resolvedUrl("../icons/sf/network.svg")
                 }
 
-                KStats.BarStat {
+                // Transparent rows: label + bare sparkline + mono rate,
+                // directly on the glass like the history graph below.
+                RowLayout {
                     Layout.fillWidth: true
-                    label: i18n("Down")
-                    value: String(hub.netDown.formattedValue ?? "")
-                    valueSlot: "888.8 MiB/s"
-                    percent: view.netDownMax > 0
-                             ? hub.num(hub.netDown.value) / view.netDownMax * 100 : 0
-                    stretch: true
-                    fixedLabelWidth: Kirigami.Units.gridUnit * 2.2
-                    accentColor: colors.accent
-                    valueColor: colors.foreground
-                    meterColor: colors.controlFill
-                    meterBorderColor: colors.separator
+                    spacing: 10
+
+                    Text {
+                        text: i18n("Down")
+                        color: colors.accent
+                        font.family: "Inter"
+                        font.pixelSize: 12
+                        font.weight: Font.DemiBold
+                    }
+
+                    KStats.Sparkline {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 20
+                        samples: hub.downHistory
+                        autoSample: false
+                        maxValue: view.netDownMax
+                        lineColor: colors.accent
+                        showFill: true
+                    }
+
+                    Text {
+                        text: String(hub.netDown.formattedValue ?? "")
+                        color: colors.foreground
+                        font.family: view.monoFamily
+                        font.pixelSize: 12
+                        font.weight: Font.Medium
+                    }
                 }
 
-                KStats.BarStat {
+                RowLayout {
                     Layout.fillWidth: true
-                    label: i18n("Up")
-                    value: String(hub.netUp.formattedValue ?? "")
-                    valueSlot: "888.8 KiB/s"
-                    percent: view.netUpMax > 0
-                             ? hub.num(hub.netUp.value) / view.netUpMax * 100 : 0
-                    stretch: true
-                    fixedLabelWidth: Kirigami.Units.gridUnit * 2.2
-                    accentColor: view.upColor
-                    valueColor: colors.foreground
-                    meterColor: colors.controlFill
-                    meterBorderColor: colors.separator
+                    spacing: 10
+
+                    Text {
+                        text: i18n("Up")
+                        color: view.upColor
+                        font.family: "Inter"
+                        font.pixelSize: 12
+                        font.weight: Font.DemiBold
+                    }
+
+                    KStats.Sparkline {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 20
+                        samples: hub.upHistory
+                        autoSample: false
+                        maxValue: view.netUpMax
+                        lineColor: view.upColor
+                        showFill: true
+                    }
+
+                    Text {
+                        text: String(hub.netUp.formattedValue ?? "")
+                        color: colors.foreground
+                        font.family: view.monoFamily
+                        font.pixelSize: 12
+                        font.weight: Font.Medium
+                    }
                 }
 
                 KStats.Sparkline {
@@ -497,12 +532,24 @@ Item {
                                 Layout.fillWidth: true
                             }
 
-                            Text {
-                                text: view.pct(hub.num(modelData.usage.value))
-                                color: colors.accent
-                                font.family: view.monoFamily
-                                font.pixelSize: 12
-                                font.weight: Font.SemiBold
+                            RowLayout {
+                                spacing: 6
+
+                                Text {
+                                    text: hub.num(modelData.temperature.value) > 0
+                                          ? Math.round(hub.num(modelData.temperature.value)) + "°" : ""
+                                    color: colors.labelTertiary
+                                    font.family: view.monoFamily
+                                    font.pixelSize: 11
+                                }
+
+                                Text {
+                                    text: view.pct(hub.num(modelData.usage.value))
+                                    color: colors.accent
+                                    font.family: view.monoFamily
+                                    font.pixelSize: 12
+                                    font.weight: Font.SemiBold
+                                }
                             }
                         }
 

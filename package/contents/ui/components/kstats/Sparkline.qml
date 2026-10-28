@@ -144,16 +144,17 @@ Canvas {
         if (showFill) {
             trace();
             // trace() ends at the leftmost sample; walk the baseline back
-            // to the right edge, then close up to the path start.
-            ctx.lineTo(plotLeft, plotTop + plotHeight);
-            ctx.lineTo(plotLeft + plotWidth, plotTop + plotHeight);
+            // to the right edge, then close up to the path start — inset a
+            // pixel so nothing paints on the very edge of the item.
+            ctx.lineTo(plotLeft, plotTop + plotHeight - 1);
+            ctx.lineTo(plotLeft + plotWidth, plotTop + plotHeight - 1);
             ctx.closePath();
-            // Fade out at ~75% height so the fill never reads as a shadow
+            // Fade out by ~80% height so the fill never reads as a shadow
             // pooling at the bottom edge of the card.
             var fillGrad = ctx.createLinearGradient(0, plotTop, 0,
-                                                    plotTop + plotHeight * 0.75);
+                                                    plotTop + plotHeight * 0.8);
             fillGrad.addColorStop(0, Qt.rgba(lineColor.r, lineColor.g,
-                                             lineColor.b, 0.30).toString());
+                                             lineColor.b, 0.28).toString());
             fillGrad.addColorStop(1, Qt.rgba(lineColor.r, lineColor.g,
                                              lineColor.b, 0).toString());
             ctx.fillStyle = fillGrad;

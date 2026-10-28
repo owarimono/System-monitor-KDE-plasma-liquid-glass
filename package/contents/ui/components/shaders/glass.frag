@@ -3,14 +3,15 @@
 // Liquid-glass compose pass. Receives the blurred wallpaper crop in
 // widget-local UV and layers the macOS material on top of it:
 //
-//   1. Superellipse (squircle) silhouette with fwidth-based AA
+//   1. Rounded-rect silhouette (exact SDF, uRadius corners) with
+//      fwidth-based AA
 //   2. Snell-style refraction through an edge band: the surface bends
 //      like a rounded dome near the border, pulling the backdrop outward
 //   3. Chromatic aberration on the refracted rim (slightly different
 //      displacement per channel)
-//   4. White tint mixed over the backdrop
-//   5. Specular border: key light from the top, soft catch on the left,
-//      plus a crisp 1px inner highlight along the lit rim
+//   4. Vibrancy (a touch of saturation) and white tint over the backdrop
+//   5. Specular border: key light from the top, soft catch on the left
+//      and bottom, plus a crisp 1px inner highlight along the lit rim
 //   6. Inner edge stroke: an Apple-style light outline hugging the whole
 //      silhouette (strongest at the top, faintest at the bottom)
 //   7. Diagonal top sheen, mouse-following sheen, bottom shade
@@ -25,7 +26,7 @@ layout(std140, binding = 0) uniform buf {
     mat4 qt_Matrix;
     float qt_Opacity;
     vec2  uSize;        // widget size in px
-    float uRoundness;   // superellipse exponent, 5.5 = iOS squircle
+    float uRadius;      // corner radius in px — exact rounded-rect corners
     vec4  uTint;        // rgb = tint color, a = tint strength
     float uEdgeBand;    // refraction band width in px, 0 disables
     float uRefract;     // max refraction displacement in px
@@ -40,20 +41,19 @@ layout(std140, binding = 0) uniform buf {
 
 layout(binding = 1) uniform sampler2D uBackdrop;
 
-// Approximate pixel distance to the superellipse edge (positive inside).
-float squircleDistance(vec2 p, vec2 halfSize, float n)
+// Exact signed distance to a rounded rectangle (negative inside).
+float sdRoundRect(vec2 p, vec2 halfSize, float r)
 {
-    vec2 t = pow(abs(p) / halfSize, vec2(n));
-    float s = pow(t.x + t.y, 1.0 / n);          // <1 inside, 1 on the edge
-    return (1.0 - s) * min(halfSize.x, halfSize.y);
+    vec2 q = abs(p) - (halfSize - vec2(r));
+    return length(max(q, vec2(0.0))) + min(max(q.x, q.y), 0.0) - r;
 }
 
-// Unit gradient of the squircle field, pointing outward (y down).
-vec2 squircleNormal(vec2 p, vec2 halfSize, float n)
+// Unit outward gradient of the rounded-rect SDF (y down). Axis-aligned on
+// straight edges, radial in the corner arcs, zero deep inside.
+vec2 sdRoundRectNormal(vec2 p, vec2 halfSize, float r)
 {
-    vec2 t = pow(abs(p) / halfSize, vec2(n));
-    float S = max(t.x + t.y, 1e-6);
-    vec2 g = pow(t, vec2(1.0 - 1.0 / n)) * sign(p) / halfSize * pow(S, 1.0 / n - 1.0);
+    vec2 q = abs(p) - (halfSize - vec2(r));
+    vec2 g = sign(p) * max(q, vec2(0.0));
     float len = length(g);
     return len > 1e-6 ? g / len : vec2(0.0);
 }
@@ -70,10 +70,11 @@ void main()
     vec2 halfSize = uSize * 0.5;
     vec2 p = (qt_TexCoord0 - 0.5) * uSize;      // center-origin, y down
 
-    float fs = squircleDistance(p, halfSize, uRoundness);
-    vec2  n  = squircleNormal(p, halfSize, uRoundness);
+    // Positive inside; corners follow uRadius exactly (no size-dependent
+    // superellipse swelling).
+    float fs = -sdRoundRect(p, halfSize, uRadius);
+    vec2  n  = sdRoundRectNormal(p, halfSize, uRadius);
     float aa = max(fwidth(fs), 1e-4);
-    // fs is positive inside; keep everything on and below the edge.
     float mask = smoothstep(-aa, aa, fs);
 
     // --- refraction through the edge dome -------------------------------

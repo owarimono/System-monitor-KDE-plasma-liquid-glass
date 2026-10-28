@@ -16,7 +16,7 @@ Item {
 
     implicitHeight: tileHeight + 4 + 12
 
-    readonly property int tileHeight: 34
+    readonly property int tileHeight: 30
 
     Row {
         id: row
@@ -54,9 +54,9 @@ Item {
                         anchors.bottom: parent.bottom
                         // Keep a visible sliver when a core is active but
                         // near-idle, so tiles never read as empty boxes.
-                        height: Math.max(parent.usage > 0.001 ? 2 : 0,
+                        height: Math.max(parent.usage > 0.001 ? 3 : 0,
                                          parent.height * parent.usage)
-                        radius: 4
+                        radius: 3
                         color: root.fillColor
 
                         Behavior on height {

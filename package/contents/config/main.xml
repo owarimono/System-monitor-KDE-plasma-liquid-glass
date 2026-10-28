@@ -59,6 +59,12 @@
     </entry>
 
     <!-- Appearance -->
+    <entry name="cornerRadius" type="Int">
+      <label>Corner radius of the widget silhouette in pixels.</label>
+      <min>8</min>
+      <max>40</max>
+      <default>20</default>
+    </entry>
     <entry name="styleMode" type="Int">
       <label>Widget material style: 0 = liquid glass, 1 = solid panel.</label>
       <min>0</min>

@@ -48,9 +48,23 @@ and the project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
-- Sharper outer silhouette (corner radius 30 → 22, matching macOS widget
-  corners) and the host card header: hostname bold and larger, clock
-  properly right-aligned (anchors inside Layouts were silently ignored).
+- The glass silhouette is now an exact rounded-rect SDF — the previous
+  superellipse swelled with widget height, reading as huge round corners.
+  Corner radius is configurable (8–40 px, default 20) in the appearance
+  settings.
+- Host header: hostname 23 px bold, clock/date genuinely right-aligned
+  (anchors inside Layouts were silently ignored).
+- Network rows are transparent — label, bare sparkline and mono rate sit
+  directly on the card like the history graph; the dark meter pills are
+  gone, as is the unused BarStat component.
+- Sparkline fills fade out by 80% height with a 1px inset and clipped
+  canvases, killing the colored smear that leaked past the card edge.
+- Per-core tiles keep a 3px sliver near idle and a shorter, lighter
+  track.
+- GPU cards show a small temperature readout next to each usage
+  percentage.
+- Section icons render as plain white SF-style SVG images (Kirigami
+  isMask silently failed on several of them).
 - The inset CPU graph panel and the network meters use a glass tint
   instead of a black backdrop.
 - Sparkline gradient fills fade out at 75% height and canvases clip, so

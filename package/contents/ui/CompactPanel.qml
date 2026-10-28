@@ -30,8 +30,7 @@ Item {
 
     GlassBackground {
         anchors.fill: parent
-        radius: Math.min(24, panel.height / 2 - 2)
-        roundness: 5.5
+        radius: Math.min(20, panel.height / 2 - 2)
 
         tint: colors.glassTint
         tintAlpha: colors.glassTintAlpha

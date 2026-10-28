@@ -24,9 +24,7 @@ Item {
     id: glass
 
     // ── Shape ─────────────────────────────────────────────────────────
-    property real radius: 28
-    // Superellipse exponent: 2 = plain rounded rect, 5.5 ≈ iOS squircle.
-    property real roundness: 5.5
+    property real radius: 20             // corner radius in px (exact)
 
     // ── Material ──────────────────────────────────────────────────────
     property color tint: "#ffffff"
@@ -302,7 +300,7 @@ Item {
                                     : dummyTex
         property vector2d uSize: Qt.vector2d(Math.max(1, glass.width),
                                              Math.max(1, glass.height))
-        property real uRoundness: glass.roundness
+        property real uRadius: glass.radius
         property vector4d uTint: glass.solidMode
             ? Qt.vector4d(glass.solidColor.r, glass.solidColor.g,
                           glass.solidColor.b, 1.0)

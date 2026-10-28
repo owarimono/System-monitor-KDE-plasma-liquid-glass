@@ -149,6 +149,10 @@ Item {
                 sensorId: "gpu/gpu" + index + "/totalVram"
                 updateRateLimit: hub.updateInterval
             }
+            readonly property var temperature: Sensors.Sensor {
+                sensorId: "gpu/gpu" + index + "/temperature"
+                updateRateLimit: hub.updateInterval
+            }
             readonly property bool available: hub.isReady(usage)
             // Availability flips asynchronously after the daemon answers;
             // bump the host's revision so the gpus binding re-runs.

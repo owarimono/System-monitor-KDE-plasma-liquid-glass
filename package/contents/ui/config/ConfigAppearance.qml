@@ -12,6 +12,7 @@ Kirigami.FormLayout {
     property int cfg_styleMode: 0
     property int cfg_appearance: 0
     property string cfg_accentColor: "#0a84ff"
+    property int cfg_cornerRadius: 20
     property int cfg_blurRadius: 24
     property bool cfg_refraction: true
     property bool cfg_realtimeRefraction: false
@@ -32,6 +33,10 @@ Kirigami.FormLayout {
     onCfg_blurRadiusChanged: {
         if (!blurSlider.activeFocus)
             blurSlider.value = cfg_blurRadius
+    }
+    onCfg_cornerRadiusChanged: {
+        if (!cornerSlider.activeFocus)
+            cornerSlider.value = cfg_cornerRadius
     }
     onCfg_accentColorChanged: syncAccent()
     Component.onCompleted: syncAccent()
@@ -91,6 +96,28 @@ Kirigami.FormLayout {
     }
 
     Item { Kirigami.FormData.isSection: true }
+
+    RowLayout {
+        Kirigami.FormData.label: i18n("Corner radius:")
+        Kirigami.FormData.buddyFor: cornerSlider
+
+        QQC2.Slider {
+            id: cornerSlider
+            Layout.preferredWidth: 180
+            from: 8
+            to: 40
+            stepSize: 1
+            snapMode: QQC2.Slider.SnapAlways
+            onValueChanged: {
+                if (activeFocus)
+                    page.cfg_cornerRadius = value
+            }
+        }
+
+        QQC2.Label {
+            text: i18n("%1 px", cornerSlider.value)
+        }
+    }
 
     RowLayout {
         Kirigami.FormData.label: i18n("Blur strength:")
