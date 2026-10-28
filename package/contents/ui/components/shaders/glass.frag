@@ -64,19 +64,25 @@ float hash12(vec2 p)
     return fract((p3.x + p3.y) * p3.z);
 }
 
-// Deband sampling: average the backdrop over a small cross whose
-// orientation is randomized per pixel (mpv-style deband, light). This
-// melts 8-bit banding steps in the blur without a heavier pass.
+// Deband (mpv-style): sample four points on a circle with a randomized
+// radius and flatten the pixel toward their average when the local
+// difference is small — 8-bit gradient band steps melt away, while real
+// content edges (large difference) stay sharp.
 vec3 backdropSample(vec2 uv)
 {
     vec3 c = texture(uBackdrop, uv).rgb;
-    float ang = hash12(gl_FragCoord.xy) * 6.2831853;
-    vec2 o = vec2(cos(ang), sin(ang)) * (1.5 / uSize);
-    c += texture(uBackdrop, uv + o).rgb;
-    c += texture(uBackdrop, uv - o).rgb;
-    c += texture(uBackdrop, uv + o.yx).rgb;
-    c += texture(uBackdrop, uv - o.yx).rgb;
-    return c * 0.2;
+    float a1 = hash12(gl_FragCoord.xy) * 6.2831853;
+    float a2 = a1 + 1.5707963;
+    float r = 3.0 + 5.0 * hash12(gl_FragCoord.xy + 7.31);
+    vec2 d1 = vec2(cos(a1), sin(a1)) * (r / uSize);
+    vec2 d2 = vec2(cos(a2), sin(a2)) * (r / uSize);
+    vec3 avg = (texture(uBackdrop, uv + d1).rgb
+              + texture(uBackdrop, uv - d1).rgb
+              + texture(uBackdrop, uv + d2).rgb
+              + texture(uBackdrop, uv - d2).rgb) * 0.25;
+    vec3 diff = abs(c - avg);
+    float flatten = 1.0 - smoothstep(0.012, 0.045, max(diff.r, max(diff.g, diff.b)));
+    return mix(c, avg, flatten);
 }
 
 void main()

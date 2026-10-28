@@ -322,7 +322,7 @@ Item {
         property real uStroke: glass.specular ? glass.edgeStroke : 0.0
         property vector2d uMouse: Qt.vector2d(glass._mouseU, glass._mouseV)
         property real uMouseFade: glass._mouseFade
-        property real uNoise: 0.012
+        property real uNoise: 0.016
     }
 
     // ── Fallback (panels, plasmoidviewer) ─────────────────────────────

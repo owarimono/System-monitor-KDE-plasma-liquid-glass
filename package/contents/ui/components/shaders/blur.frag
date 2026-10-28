@@ -21,6 +21,13 @@ layout(std140, binding = 0) uniform buf {
 
 layout(binding = 1) uniform sampler2D uSource;
 
+float hash12(vec2 p)
+{
+    vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+    p3 += dot(p3, p3.yzx + 33.33);
+    return fract((p3.x + p3.y) * p3.z);
+}
+
 void main()
 {
     float sigma = max(uRadius * 0.5, 0.01);
@@ -35,5 +42,8 @@ void main()
         wsum += w;
     }
 
-    fragColor = sum / wsum;
+    fragColor = sum / wsum
+        // Tiny dither per pass: spreads the 8-bit quantization error of
+        // each intermediate FBO so it never correlates into banding.
+        + (hash12(gl_FragCoord.xy + uDirection * 13.7) - 0.5) * 0.004;
 }
