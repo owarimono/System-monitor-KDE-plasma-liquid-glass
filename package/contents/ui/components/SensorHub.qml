@@ -125,20 +125,51 @@ Item {
         updateRateLimit: hub.updateInterval
     }
 
-    // ── GPU (auto-hidden when the daemon exposes none) ────────────────
-    readonly property var gpuUsage: Sensors.Sensor {
-        sensorId: "gpu/all/usage"
-        updateRateLimit: hub.updateInterval
+    // ── GPUs (auto-probed; machines may have several) ─────────────────
+    // ksystemstats exposes gpu/gpuN/* per adapter with no count sensor, so
+    // slots 0..7 are probed and the Ready ones are listed.
+    Instantiator {
+        id: gpuProbe
+        model: 8
+        delegate: QtObject {
+            required property int index
+            readonly property var usage: Sensors.Sensor {
+                sensorId: "gpu/gpu" + index + "/usage"
+                updateRateLimit: hub.updateInterval
+            }
+            readonly property var name: Sensors.Sensor {
+                sensorId: "gpu/gpu" + index + "/name"
+                updateRateLimit: 60000
+            }
+            readonly property var vramUsed: Sensors.Sensor {
+                sensorId: "gpu/gpu" + index + "/usedVram"
+                updateRateLimit: hub.updateInterval
+            }
+            readonly property var vramTotal: Sensors.Sensor {
+                sensorId: "gpu/gpu" + index + "/totalVram"
+                updateRateLimit: hub.updateInterval
+            }
+            readonly property bool available: hub.isReady(usage)
+            // Availability flips asynchronously after the daemon answers;
+            // bump the host's revision so the gpus binding re-runs.
+            onAvailableChanged: hub.gpuRevision++
+        }
     }
-    readonly property var gpuVramUsed: Sensors.Sensor {
-        sensorId: "gpu/all/usedVram"
-        updateRateLimit: hub.updateInterval
+
+    // Read in the gpus binding so it re-evaluates whenever a probe slot
+    // becomes Ready (objectAt itself has no change notification).
+    property int gpuRevision: 0
+
+    readonly property var gpus: {
+        const revision = hub.gpuRevision // dependency: re-run on readiness flips
+        const list = []
+        for (let i = 0; i < 8; i++) {
+            const gpu = gpuProbe.objectAt(i)
+            if (gpu && gpu.available)
+                list.push(gpu)
+        }
+        return list
     }
-    readonly property var gpuVramTotal: Sensors.Sensor {
-        sensorId: "gpu/all/totalVram"
-        updateRateLimit: hub.updateInterval
-    }
-    readonly property bool gpuAvailable: hub.isReady(gpuUsage)
 
     // ── Host identity ─────────────────────────────────────────────────
     readonly property var hostname: Sensors.Sensor {

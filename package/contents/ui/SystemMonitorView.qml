@@ -33,19 +33,9 @@ Item {
 
     readonly property string monoFamily: "JetBrains Mono"
 
-    // Per-metric accents, following the macOS Stats convention of one
-    // signature color per metric instead of a single theme accent.
-    readonly property color cpuColor: colors.accent
-    readonly property color memoryColor: "#bf5af2"
-    readonly property color netDownColor: colors.green
-    readonly property color netUpColor: colors.orange
-    readonly property color gpuColor: "#ff375f"
-
-    // Backdrop for the mini meters: dark like KStats' original so the
-    // colored lines stay readable on any glass tint.
-    readonly property color meterBackdrop: colors.isLight
-        ? Qt.rgba(0, 0, 0, 0.82)
-        : Qt.rgba(0, 0, 0, 0.45)
+    // macOS uses one accent everywhere; the Up rate and memory ring-tone
+    // are just lighter stops of it. The disk bar keeps its level ramp.
+    readonly property color upColor: Qt.lighter(colors.accent, 1.25)
 
     // Dynamic ceilings for the network sparklines (bytes/s history).
     readonly property real netDownMax: netPeak(hub.downHistory)
@@ -79,12 +69,12 @@ Item {
     Layout.minimumWidth: 320
     Layout.minimumHeight: 260
     Layout.maximumWidth: 520
-    Layout.maximumHeight: 1200
+    Layout.maximumHeight: 1300
     clip: true
 
     GlassBackground {
         anchors.fill: parent
-        radius: 30
+        radius: 22
         roundness: 5.5
 
         tint: colors.glassTint
@@ -99,13 +89,13 @@ Item {
         realtimeRefraction: cfg.realtimeRefraction
     }
 
-    // Section header row: monochrome icon, semibold title, mono value on
-    // the trailing edge — the pattern every glass card opens with.
+    // Section header row: monochrome SF-style icon, semibold title, mono
+    // value on the trailing edge — every glass card opens with one.
     component SectionHeader: RowLayout {
         property string title
         property string iconName
         property string value
-        property color accent: colors.foreground
+        property color valueColor: colors.foreground
 
         Layout.fillWidth: true
         spacing: 8
@@ -114,9 +104,9 @@ Item {
             visible: iconName !== ""
             source: iconName
             isMask: true
-            color: colors.labelSecondary
-            Layout.preferredWidth: 16
-            Layout.preferredHeight: 16
+            color: colors.foreground
+            Layout.preferredWidth: 17
+            Layout.preferredHeight: 17
         }
 
         Text {
@@ -131,7 +121,7 @@ Item {
         Text {
             visible: value !== ""
             text: value
-            color: accent
+            color: valueColor
             font.family: view.monoFamily
             font.pixelSize: 13
             font.weight: Font.SemiBold
@@ -163,8 +153,8 @@ Item {
                         text: String(hub.hostname.value ?? "…")
                         color: colors.foreground
                         font.family: "Inter"
-                        font.pixelSize: 19
-                        font.weight: Font.SemiBold
+                        font.pixelSize: 21
+                        font.weight: Font.Bold
                     }
 
                     Text {
@@ -172,6 +162,7 @@ Item {
                         color: colors.labelSecondary
                         font.family: "Inter"
                         font.pixelSize: 12
+                        font.weight: Font.Medium
                     }
 
                     Text {
@@ -184,10 +175,11 @@ Item {
                 }
 
                 ColumnLayout {
-                    spacing: 2
+                    Layout.alignment: Qt.AlignTop
 
                     Text {
-                        anchors.right: parent.right
+                        Layout.alignment: Qt.AlignRight
+                        horizontalAlignment: Text.AlignRight
                         text: view.clockText
                         color: colors.foreground
                         font.family: view.monoFamily
@@ -196,7 +188,8 @@ Item {
                     }
 
                     Text {
-                        anchors.right: parent.right
+                        Layout.alignment: Qt.AlignRight
+                        horizontalAlignment: Text.AlignRight
                         text: view.dateText
                         color: colors.labelSecondary
                         font.family: "Inter"
@@ -217,9 +210,9 @@ Item {
 
                 SectionHeader {
                     title: i18n("CPU")
-                    iconName: "cpu"
+                    iconName: Qt.resolvedUrl("../icons/sf/cpu.svg")
                     value: view.pct(hub.num(hub.cpuUsage.value))
-                    accent: view.cpuColor
+                    valueColor: colors.accent
                 }
 
                 Rectangle {
@@ -227,7 +220,7 @@ Item {
                     Layout.fillWidth: true
                     Layout.preferredHeight: Kirigami.Units.gridUnit * 3.2
                     radius: 12
-                    color: view.meterBackdrop
+                    color: colors.controlFill
                     border.width: 1
                     border.color: colors.separator
 
@@ -237,7 +230,7 @@ Item {
                         samples: hub.cpuHistory
                         autoSample: false
                         maxValue: 100
-                        lineColor: view.cpuColor
+                        lineColor: colors.accent
                         showFill: true
                     }
                 }
@@ -247,7 +240,7 @@ Item {
                     Layout.fillWidth: true
                     count: hub.coreCount
                     sensorAt: hub.coreSensorAt
-                    fillColor: view.cpuColor
+                    fillColor: colors.accent
                     trackColor: colors.controlFill
                     labelColor: colors.labelTertiary
                 }
@@ -265,9 +258,9 @@ Item {
 
                 SectionHeader {
                     title: i18n("Memory")
-                    iconName: "media-memory"
+                    iconName: Qt.resolvedUrl("../icons/sf/memory.svg")
                     value: view.pct(hub.memLevel * 100)
-                    accent: view.memoryColor
+                    valueColor: colors.accent
                 }
 
                 KStats.DetailRow {
@@ -275,7 +268,7 @@ Item {
                     value: String(hub.memUsed.formattedValue ?? "")
                     labelColor: colors.labelSecondary
                     valueColor: colors.foreground
-                    dotColor: colors.green
+                    dotColor: colors.accent
                 }
 
                 KStats.DetailRow {
@@ -309,8 +302,7 @@ Item {
 
                 SectionHeader {
                     title: i18n("Network")
-                    iconName: "network-wireless"
-                    value: ""
+                    iconName: Qt.resolvedUrl("../icons/sf/network.svg")
                 }
 
                 KStats.BarStat {
@@ -322,9 +314,9 @@ Item {
                              ? hub.num(hub.netDown.value) / view.netDownMax * 100 : 0
                     stretch: true
                     fixedLabelWidth: Kirigami.Units.gridUnit * 2.2
-                    accentColor: view.netDownColor
+                    accentColor: colors.accent
                     valueColor: colors.foreground
-                    meterColor: view.meterBackdrop
+                    meterColor: colors.controlFill
                     meterBorderColor: colors.separator
                 }
 
@@ -337,9 +329,9 @@ Item {
                              ? hub.num(hub.netUp.value) / view.netUpMax * 100 : 0
                     stretch: true
                     fixedLabelWidth: Kirigami.Units.gridUnit * 2.2
-                    accentColor: view.netUpColor
+                    accentColor: view.upColor
                     valueColor: colors.foreground
-                    meterColor: view.meterBackdrop
+                    meterColor: colors.controlFill
                     meterBorderColor: colors.separator
                 }
 
@@ -350,7 +342,7 @@ Item {
                     samples: hub.downHistory
                     autoSample: false
                     maxValue: view.netDownMax
-                    lineColor: view.netDownColor
+                    lineColor: colors.accent
                     showFill: true
                     scaleColor: colors.labelTertiary
                 }
@@ -368,9 +360,9 @@ Item {
 
                 SectionHeader {
                     title: i18n("Disk")
-                    iconName: "drive-harddisk"
+                    iconName: Qt.resolvedUrl("../icons/sf/disk.svg")
                     value: view.pct(hub.num(hub.diskUsedPercent.value))
-                    accent: colors.levelColor(hub.num(hub.diskUsedPercent.value) / 100)
+                    valueColor: colors.levelColor(hub.num(hub.diskUsedPercent.value) / 100)
                 }
 
                 RowLayout {
@@ -402,7 +394,8 @@ Item {
                         spacing: 1
 
                         Text {
-                            anchors.right: parent.right
+                            Layout.alignment: Qt.AlignRight
+                            horizontalAlignment: Text.AlignRight
                             text: i18n("Total")
                             color: colors.labelTertiary
                             font.family: "Inter"
@@ -410,7 +403,8 @@ Item {
                         }
 
                         Text {
-                            anchors.right: parent.right
+                            Layout.alignment: Qt.AlignRight
+                            horizontalAlignment: Text.AlignRight
                             text: String(hub.diskTotal.formattedValue ?? "")
                             color: colors.foreground
                             font.family: view.monoFamily
@@ -462,48 +456,85 @@ Item {
             }
         }
 
-        // ── GPU ───────────────────────────────────────────────────────
+        // ── GPUs (one block per adapter, with its name) ───────────────
         GlassCard {
-            visible: view.showGpu
+            visible: cfg.showGpu && hub.gpus.length > 0
             Layout.fillWidth: true
 
             ColumnLayout {
                 Layout.fillWidth: true
-                spacing: 8
+                spacing: 10
 
                 SectionHeader {
                     title: i18n("GPU")
-                    iconName: "video-display"
-                    value: view.pct(hub.num(hub.gpuUsage.value))
-                    accent: view.gpuColor
+                    iconName: Qt.resolvedUrl("../icons/sf/gpu.svg")
                 }
 
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 10
-                    radius: 5
-                    color: colors.controlFill
+                Repeater {
+                    model: hub.gpus
 
-                    Rectangle {
-                        anchors.left: parent.left
-                        anchors.top: parent.top
-                        anchors.bottom: parent.bottom
-                        width: parent.width * Math.max(0, Math.min(1, hub.num(hub.gpuUsage.value) / 100))
-                        radius: 5
-                        color: view.gpuColor
+                    delegate: ColumnLayout {
+                        required property int index
+                        required property var modelData
+                        // NOTE: ids are not reachable through other ids in
+                        // QML — reference `hub` bare, never `view.hub`.
+                        readonly property real level:
+                            hub.num(modelData.usage.value) / 100
 
-                        Behavior on width {
-                            NumberAnimation { duration: 500; easing.type: Easing.OutCubic }
+                        Layout.fillWidth: true
+                        spacing: 6
+
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 8
+
+                            Text {
+                                text: String(modelData.name.value ?? ("GPU " + (index + 1)))
+                                color: colors.labelSecondary
+                                font.family: "Inter"
+                                font.pixelSize: 12
+                                elide: Text.ElideRight
+                                Layout.fillWidth: true
+                            }
+
+                            Text {
+                                text: view.pct(hub.num(modelData.usage.value))
+                                color: colors.accent
+                                font.family: view.monoFamily
+                                font.pixelSize: 12
+                                font.weight: Font.SemiBold
+                            }
+                        }
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 8
+                            radius: 4
+                            color: colors.controlFill
+
+                            Rectangle {
+                                anchors.left: parent.left
+                                anchors.top: parent.top
+                                anchors.bottom: parent.bottom
+                                width: parent.width * Math.max(0, Math.min(1, parent.parent.level))
+                                radius: 4
+                                color: colors.accent
+
+                                Behavior on width {
+                                    NumberAnimation { duration: 500; easing.type: Easing.OutCubic }
+                                }
+                            }
+                        }
+
+                        KStats.DetailRow {
+                            visible: hub.num(modelData.vramTotal.value) > 0
+                            label: i18n("VRAM")
+                            value: String(modelData.vramUsed.formattedValue ?? "") + " / "
+                                   + String(modelData.vramTotal.formattedValue ?? "")
+                            labelColor: colors.labelSecondary
+                            valueColor: colors.foreground
                         }
                     }
-                }
-
-                KStats.DetailRow {
-                    label: i18n("VRAM")
-                    value: String(hub.gpuVramUsed.formattedValue ?? "") + " / "
-                           + String(hub.gpuVramTotal.formattedValue ?? "")
-                    labelColor: colors.labelSecondary
-                    valueColor: colors.foreground
                 }
             }
         }
@@ -512,7 +543,4 @@ Item {
     function pct(v) {
         return Math.max(0, Math.min(100, Math.round(v))) + "%"
     }
-
-    // GPU section shows only when the daemon actually exposes GPU sensors.
-    readonly property bool showGpu: cfg.showGpu && hub.gpuAvailable
 }

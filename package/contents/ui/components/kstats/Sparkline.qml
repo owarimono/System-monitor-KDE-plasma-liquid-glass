@@ -14,6 +14,7 @@ import org.kde.kirigami as Kirigami
 
 Canvas {
     id: spark
+    clip: true
 
     property real sampleValue: 0
     property int sampleLimit: 36
@@ -147,9 +148,12 @@ Canvas {
             ctx.lineTo(plotLeft, plotTop + plotHeight);
             ctx.lineTo(plotLeft + plotWidth, plotTop + plotHeight);
             ctx.closePath();
-            var fillGrad = ctx.createLinearGradient(0, plotTop, 0, plotTop + plotHeight);
+            // Fade out at ~75% height so the fill never reads as a shadow
+            // pooling at the bottom edge of the card.
+            var fillGrad = ctx.createLinearGradient(0, plotTop, 0,
+                                                    plotTop + plotHeight * 0.75);
             fillGrad.addColorStop(0, Qt.rgba(lineColor.r, lineColor.g,
-                                             lineColor.b, 0.32).toString());
+                                             lineColor.b, 0.30).toString());
             fillGrad.addColorStop(1, Qt.rgba(lineColor.r, lineColor.g,
                                              lineColor.b, 0).toString());
             ctx.fillStyle = fillGrad;

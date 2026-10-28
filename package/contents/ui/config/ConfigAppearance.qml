@@ -3,7 +3,7 @@ import QtQuick.Controls as QQC2
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 
-// Material (glass/solid), color scheme, accent color and the performance
+// Material (glass/solid), color scheme, accent theme and the performance
 // knobs of the liquid glass effect.
 
 Kirigami.FormLayout {
@@ -11,14 +11,37 @@ Kirigami.FormLayout {
 
     property int cfg_styleMode: 0
     property int cfg_appearance: 0
-    property alias cfg_accentColor: accentButton.color
+    property string cfg_accentColor: "#0a84ff"
     property int cfg_blurRadius: 24
     property bool cfg_refraction: true
     property bool cfg_realtimeRefraction: false
 
+    // The macOS system accent colors (System Settings → Appearance).
+    readonly property var accentPresets: [
+        ["Blue", "#0a84ff"],
+        ["Purple", "#bf5af2"],
+        ["Pink", "#ff375f"],
+        ["Red", "#ff453a"],
+        ["Orange", "#ff9f0a"],
+        ["Yellow", "#ffd60a"],
+        ["Green", "#32d74b"],
+        ["Graphite", "#8e8e93"]
+    ]
+    readonly property int customAccentIndex: accentPresets.length
+
     onCfg_blurRadiusChanged: {
         if (!blurSlider.activeFocus)
             blurSlider.value = cfg_blurRadius
+    }
+    onCfg_accentColorChanged: syncAccent()
+    Component.onCompleted: syncAccent()
+
+    function syncAccent() {
+        const idx = accentPresets.findIndex(
+            p => p[1].toLowerCase() === cfg_accentColor.toLowerCase())
+        accentCombo.currentIndex = idx >= 0 ? idx : customAccentIndex
+        if (idx < 0)
+            accentButton.color = cfg_accentColor
     }
 
     QQC2.ComboBox {
@@ -44,10 +67,27 @@ Kirigami.FormLayout {
         onActivated: (index) => page.cfg_appearance = model[index].value
     }
 
+    QQC2.ComboBox {
+        id: accentCombo
+        Kirigami.FormData.label: i18n("Accent theme:")
+        editable: false
+        model: accentPresets.map(p => p[0]).concat([i18n("Custom")])
+        onActivated: (index) => {
+            if (index < page.customAccentIndex)
+                page.cfg_accentColor = page.accentPresets[index][1]
+        }
+    }
+
     Kirigami.ColorButton {
         id: accentButton
-        Kirigami.FormData.label: i18n("Accent color:")
+        Kirigami.FormData.label: i18n("Custom accent:")
+        enabled: accentCombo.currentIndex === page.customAccentIndex
         modal: true
+        showAlphaChannel: false
+        onColorChanged: {
+            if (enabled)
+                page.cfg_accentColor = String(color)
+        }
     }
 
     Item { Kirigami.FormData.isSection: true }

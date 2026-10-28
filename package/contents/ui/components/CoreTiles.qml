@@ -52,8 +52,11 @@ Item {
                         anchors.left: parent.left
                         anchors.right: parent.right
                         anchors.bottom: parent.bottom
-                        height: parent.height * parent.usage
-                        radius: 5
+                        // Keep a visible sliver when a core is active but
+                        // near-idle, so tiles never read as empty boxes.
+                        height: Math.max(parent.usage > 0.001 ? 2 : 0,
+                                         parent.height * parent.usage)
+                        radius: 4
                         color: root.fillColor
 
                         Behavior on height {

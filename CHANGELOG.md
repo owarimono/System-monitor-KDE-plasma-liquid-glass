@@ -48,6 +48,21 @@ and the project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- Sharper outer silhouette (corner radius 30 → 22, matching macOS widget
+  corners) and the host card header: hostname bold and larger, clock
+  properly right-aligned (anchors inside Layouts were silently ignored).
+- The inset CPU graph panel and the network meters use a glass tint
+  instead of a black backdrop.
+- Sparkline gradient fills fade out at 75% height and canvases clip, so
+  the fill no longer smears past the card edge.
+- Per-core tiles keep a visible sliver when a core is near-idle.
+- Multiple GPUs are listed with their names (probed gpu/gpu0..7), each
+  with its own usage bar and VRAM row.
+- SF Symbols-style monochrome SVG icons replace breeze icons in the
+  section headers.
+- macOS accent theme presets (Blue/Purple/Pink/Red/Orange/Yellow/Green/
+  Graphite + custom picker) in the appearance settings; one accent now
+  drives the whole widget, like macOS.
 - Stat cards now size to their content — the fixed card heights taken
   from KStats' dropdown made the detail rows overflow onto neighbouring
   cards.
