@@ -579,14 +579,24 @@ Item {
                     }
                 }
 
-                MacBar {
+                Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 8
-                    level: hub.num(hub.diskUsedPercent.value) / 100
-                    fillColor: colors.levelColor(hub.num(hub.diskUsedPercent.value) / 100)
-                    trackColor: colors.controlFill
-                    trackBorderColor: colors.separator
-                    capColor: Qt.rgba(1, 1, 1, 0.35)
+                    radius: 4
+                    color: colors.controlFill
+
+                    Rectangle {
+                        anchors.left: parent.left
+                        anchors.top: parent.top
+                        anchors.bottom: parent.bottom
+                        width: parent.width * Math.max(0, Math.min(1, hub.num(hub.diskUsedPercent.value) / 100))
+                        radius: 4
+                        color: colors.levelColor(hub.num(hub.diskUsedPercent.value) / 100)
+
+                        Behavior on width {
+                            NumberAnimation { duration: 500; easing.type: Easing.OutCubic }
+                        }
+                    }
                 }
 
                 RowLayout {
@@ -757,14 +767,24 @@ Item {
                             }
                         }
 
-                        MacBar {
+                        Rectangle {
                             Layout.fillWidth: true
                             Layout.preferredHeight: 8
-                            level: gpuBlock.level
-                            fillColor: colors.accent
-                            trackColor: colors.controlFill
-                            trackBorderColor: colors.separator
-                            capColor: Qt.rgba(1, 1, 1, 0.35)
+                            radius: 4
+                            color: colors.controlFill
+
+                            Rectangle {
+                                anchors.left: parent.left
+                                anchors.top: parent.top
+                                anchors.bottom: parent.bottom
+                                width: parent.width * Math.max(0, Math.min(1, parent.parent.level))
+                                radius: 4
+                                color: colors.accent
+
+                                Behavior on width {
+                                    NumberAnimation { duration: 500; easing.type: Easing.OutCubic }
+                                }
+                            }
                         }
 
                         KStats.DetailRow {
