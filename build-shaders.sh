@@ -12,8 +12,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SHADER_DIR="$SCRIPT_DIR/package/contents/ui/components/shaders"
 
 QSB="$(command -v qsb || true)"
-if [[ -z "$QSB" && -x /usr/lib/qt6/bin/qsb ]]; then
-    QSB=/usr/lib/qt6/bin/qsb
+if [[ -z "$QSB" ]]; then
+    for candidate in /usr/lib/qt6/bin/qsb /usr/lib/qt6/libexec/qsb; do
+        if [[ -x "$candidate" ]]; then
+            QSB="$candidate"
+            break
+        fi
+    done
 fi
 if [[ -z "$QSB" ]]; then
     echo "error: qsb not found. Install qt6-shadertools." >&2

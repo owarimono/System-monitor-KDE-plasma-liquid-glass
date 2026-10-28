@@ -17,7 +17,7 @@ jobs:
       - name: Install Qt shader tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends qt6-shadertools zip
+          sudo apt-get install -y --no-install-recommends qt6-shadertools-dev zip
 
       - name: Compile shaders
         run: ./build-shaders.sh
