@@ -188,6 +188,36 @@ Item {
         updateRateLimit: 60000
     }
 
+    // ── Network graph scales (auto-magnitude, 1-2-5 steps) ────────────
+    // The ceiling follows the window peak in 1/2/5 magnitude steps with
+    // hysteresis: it steps up the moment traffic exceeds it, and steps
+    // down only when the window peak falls below 40% of it — so the
+    // curve always sits mid-frame with visible variation, never hugging
+    // the top.
+    property real downScale: 512
+    property real upScale: 512
+
+    function niceCeiling(peak) {
+        let mag = 1
+        while (mag < 1e9) {
+            for (const s of [1, 2, 5]) {
+                if (peak <= s * mag)
+                    return s * mag
+            }
+            mag *= 10
+        }
+        return 1e9
+    }
+
+    function updateScales() {
+        const dPeak = Math.max(512, hub.num(hub.netDown.value))
+        const uPeak = Math.max(512, hub.num(hub.netUp.value))
+        if (dPeak > downScale || dPeak < downScale * 0.4)
+            downScale = niceCeiling(dPeak)
+        if (uPeak > upScale || uPeak < upScale * 0.4)
+            upScale = niceCeiling(uPeak)
+    }
+
     // ── History buffers for the rolling graphs ────────────────────────
     readonly property int historySamples: Math.max(10, Math.round(
         graphDuration * 1000 / Math.max(500, updateInterval)))
@@ -223,6 +253,7 @@ Item {
             hub.cpuHistory = hub.push(hub.cpuHistory, hub.num(hub.cpuUsage.value))
             hub.downHistory = hub.push(hub.downHistory, hub.num(hub.netDown.value))
             hub.upHistory = hub.push(hub.upHistory, hub.num(hub.netUp.value))
+            hub.updateScales()
             hub.historyRevision++
         }
     }

@@ -422,7 +422,7 @@ Item {
                         smoothing: 6
                         samples: hub.downHistory
                         autoSample: false
-                        maxValue: netDownMax
+                        maxValue: hub.downScale
                         lineColor: colors.accent
                         showFill: true
                     }
@@ -454,7 +454,7 @@ Item {
                         smoothing: 6
                         samples: hub.upHistory
                         autoSample: false
-                        maxValue: netUpMax
+                        maxValue: hub.upScale
                         lineColor: netUpColor
                         showFill: true
                     }
@@ -475,7 +475,7 @@ Item {
                     smoothing: 6
                     samples: hub.downHistory
                     autoSample: false
-                    maxValue: netDownMax
+                    maxValue: hub.downScale
                     lineColor: colors.accent
                     showFill: true
                     scaleColor: colors.labelTertiary
