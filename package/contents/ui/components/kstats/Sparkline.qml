@@ -22,6 +22,12 @@ Canvas {
     property bool autoSample: true
     property int smoothing: 3                 // display MA half-width; 1 = off
     property real maxValue: 100
+    // The scale eases toward maxValue so a traffic spike smoothly
+    // rescales the whole graph instead of snapping (auto-range).
+    property real effMax: maxValue
+    Behavior on effMax {
+        NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
+    }
     property color lineColor: "white"
     property bool showFill: false
     property bool showGrid: false
@@ -42,7 +48,7 @@ Canvas {
             numeric = 0;
         }
 
-        var ceiling = Math.max(1, spark.maxValue);
+        var ceiling = Math.max(1, spark.effMax);
         var next = samples.slice(0);
         next.push(Math.max(0, Math.min(ceiling, numeric)));
         while (next.length > sampleLimit) {
@@ -67,7 +73,7 @@ Canvas {
             return;
         }
 
-        var ceiling = Math.max(1, spark.maxValue);
+        var ceiling = Math.max(1, spark.effMax);
         var fontSize = Math.max(9, Kirigami.Theme.smallFont.pixelSize - 1);
         ctx.font = fontSize + "px Inter, sans-serif";
 
@@ -132,7 +138,9 @@ Canvas {
         // one-sample traffic bursts into rounded hills (the stored series
         // itself is untouched). Cheap: three reads per point per paint.
         function smoothed() {
-            var r = Math.max(1, Math.min(6, root.smoothing >> 1) | 0);
+            // NOTE: use `spark`, never `root` — `root` leaks in from
+            // main.qml (the PlasmoidItem) and carries no smoothing.
+            var r = Math.max(1, Math.min(6, spark.smoothing >> 1) | 0);
             var out = new Array(samples.length);
             for (var i = 0; i < samples.length; i++) {
                 var sum = 0;
@@ -151,12 +159,19 @@ Canvas {
             ctx.beginPath();
             for (var i = 0; i < series.length; i++) {
                 var x = plotLeft + plotWidth - (series.length - 1 - i) * step;
-                var y = plotTop + plotHeight - (series[i] / ceiling * plotHeight);
+                // Normalize against the eased scale and HARD-CLAMP to the
+                // plot: a spike that lands before the scale catches up can
+                // never push the curve or fill out of the frame.
+                var t = Math.max(0, Math.min(ceiling, series[i])) / ceiling;
+                var y = plotTop + 1
+                      + (plotHeight - 2) * (1 - Math.min(1, t));
                 if (i === 0) {
                     ctx.moveTo(x, y);
                 } else if (i < series.length - 1) {
                     var nx = plotLeft + plotWidth - (series.length - 2 - i) * step;
-                    var ny = plotTop + plotHeight - (series[i + 1] / ceiling * plotHeight);
+                    var ny = plotTop + 1
+                           + (plotHeight - 2) * (1 - Math.min(1, series[i + 1] / ceiling));
+                    ny = Math.max(plotTop + 1, Math.min(plotTop + plotHeight - 1, ny));
                     ctx.quadraticCurveTo(x, y, (x + nx) / 2, (y + ny) / 2);
                 } else {
                     ctx.lineTo(x, y);
