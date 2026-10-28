@@ -13,6 +13,12 @@ and the project adheres to [Semantic Versioning](https://semver.org/).
   (MIT — see `LICENSES/KStats-MIT.txt`): `RingGauge`, `BarStat` rows with
   sparkline meters and anti-jitter tabular numerals, `Sparkline` history
   charts, `CpuCoreBars` and `DetailRow`s.
+- Sections now live directly on the glass in macOS Settings style —
+  hairline separators and small uppercase group captions instead of
+  nested card boxes.
+- Glass material: added an Apple-style inner edge stroke and a diagonal
+  top sheen, stronger refraction/chromatic aberration and a lighter
+  tint so the wallpaper reads through like real glass.
 - Per-metric accent colors (CPU blue, RAM purple, network green/orange,
   GPU pink), following the macOS Stats convention.
 - The hand-rolled `ActivityRing`, `RollingGraph`, `StatBar`, `CoreBars`
