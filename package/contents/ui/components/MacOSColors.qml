@@ -55,11 +55,11 @@ QtObject {
 
     // Glass section cards (Tahoe style: a second glass layer on the glass).
     readonly property color cardFillTop: isLight
-        ? Qt.rgba(1, 1, 1, 0.55)
-        : Qt.rgba(1, 1, 1, 0.16)
+        ? Qt.rgba(1, 1, 1, 0.58)
+        : Qt.rgba(1, 1, 1, 0.19)
     readonly property color cardFillBottom: isLight
-        ? Qt.rgba(1, 1, 1, 0.38)
-        : Qt.rgba(1, 1, 1, 0.09)
+        ? Qt.rgba(1, 1, 1, 0.40)
+        : Qt.rgba(1, 1, 1, 0.11)
     readonly property color cardBorder: isLight
         ? Qt.rgba(0, 0, 0, 0.08)
         : Qt.rgba(1, 1, 1, 0.15)

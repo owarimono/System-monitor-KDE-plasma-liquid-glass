@@ -152,6 +152,17 @@ Item {
         anchors.margins: 20
         spacing: 12
 
+        opacity: 0
+        transform: Translate { id: appearShift; y: 14 }
+
+        Component.onCompleted: appearAnimation.start()
+
+        ParallelAnimation {
+            id: appearAnimation
+            NumberAnimation { target: content; property: "opacity"; to: 1; duration: 380; easing.type: Easing.OutCubic }
+            NumberAnimation { target: appearShift; property: "y"; to: 0; duration: 380; easing.type: Easing.OutCubic }
+        }
+
         // ── Host card ─────────────────────────────────────────────────
         GlassCard {
             Layout.fillWidth: true
@@ -228,7 +239,6 @@ Item {
                     title: i18n("CPU")
                     iconName: Qt.resolvedUrl("icons/sf/cpu.svg")
                     value: view.pct(hub.num(hub.cpuUsage.value))
-                    valueColor: colors.accent
                 }
 
                 Rectangle {
@@ -277,7 +287,6 @@ Item {
                     title: i18n("Memory")
                     iconName: Qt.resolvedUrl("icons/sf/memory.svg")
                     value: view.pct(hub.memLevel * 100)
-                    valueColor: colors.accent
                 }
 
                 KStats.DetailRow {
@@ -467,8 +476,8 @@ Item {
 
                 Rectangle {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 10
-                    radius: 5
+                    Layout.preferredHeight: 8
+                    radius: 4
                     color: colors.controlFill
 
                     Rectangle {
@@ -561,7 +570,7 @@ Item {
 
                                 Text {
                                     text: view.pct(hub.num(modelData.usage.value))
-                                    color: colors.accent
+                                    color: colors.foreground
                                     font.family: view.monoFamily
                                     font.pixelSize: 12
                                     font.weight: Font.SemiBold
