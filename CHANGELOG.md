@@ -27,6 +27,14 @@ and the project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Bundled Inter typeface** (SIL OFL — `LICENSES/Inter-OFL.txt`), the
+  closest open match to Apple's SF Pro, used across the whole widget —
+  this single change does the most to make it read as macOS.
+- **Vibrancy**: the blurred backdrop gains a touch of saturation in the
+  glass shader, like Apple's materials.
+- Ring gauges stroke through an accent gradient with a soft glow
+  (activity-ring style); sparklines are smoothed with quadratic curves
+  and a fading gradient fill.
 - `Sparkline.maxValue` normalization for byte-rate series and BarStat
   `valueSlot`/`meterWidth` extensions for wider value strings and meters
   (upstream adaptations, documented in the file headers).
