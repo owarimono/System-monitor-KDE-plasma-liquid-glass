@@ -4,6 +4,33 @@ All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and the project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.5.0] - 2026-10-29
+
+### Added
+
+- **Mini mode** — a compact percentages-only card (CPU / RAM / Disk /
+  Battery rows with icons), sized like a single section card. Clicking it
+  expands into the full card with a fluid glass morph (the backdrop blur
+  re-crops live during the resize); the full card header gains a collapse
+  button. The mode persists across restarts, is toggleable from the
+  context menu, and starts per the "Start in mini mode" setting.
+- Sparklines draw a glowing current-value dot at the newest sample.
+
+### Fixed
+
+- Sparkline smoothing window silently disabled (cross-file id leak —
+  `root` resolved to the PlasmoidItem): network rates now smooth over a
+  7-sample window.
+- Sparkline auto-scale is dynamic: the axis eases toward the series peak
+  (300ms OutCubic) and every drawn point is hard-clamped to the plot —
+  spikes rescale the graph fluidly and can never escape the frame.
+- Sparkline sample spacing now derives from the actual series length
+  (was the buffer limit), which pushed curves and fills past the plot
+  edge.
+- Sparkline area polygon closes on the correct side (points run
+  oldest→newest; the previous closure drew a full-width diagonal).
+- Sparkline current-value dot scope (referenced a trace-local variable).
+
 ## [0.4.0] - 2026-10-29
 
 ### Added

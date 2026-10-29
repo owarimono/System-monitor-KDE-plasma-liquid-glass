@@ -3,10 +3,12 @@
 // Modifications for System Monitor (Glass):
 //   - maxValue property: samples are normalized against maxValue instead of
 //     a hard-coded 0..100 percent clamp, so byte-rate series (network)
-//     plot correctly. Scale ticks and labels follow maxValue.
-//   - the line is smoothed with quadratic midpoints and the fill fades
-//     through a vertical gradient (straight segments + flat fill in
-//     upstream); scale text uses the bundled Inter font.
+//     plot correctly. The axis EASES toward maxValue (auto-range) and all
+//     drawn points are clamped to the plot — spikes never leave the frame.
+//   - the line is smoothed with a centered moving average plus quadratic
+//     midpoints, and the fill fades through a vertical gradient
+//   - a glowing current-value dot marks the newest sample
+//   - scale text uses the bundled Inter font
 
 import QtQuick
 
@@ -20,7 +22,7 @@ Canvas {
     property int sampleLimit: 36
     property var samples: []
     property bool autoSample: true
-    property int smoothing: 3                 // display MA half-width; 1 = off
+    property int smoothing: 3                 // display MA radius (samples); 1 = off
     property real maxValue: 100
     // The scale eases toward maxValue so a traffic spike smoothly
     // rescales the whole graph instead of snapping (auto-range).
@@ -40,6 +42,7 @@ Canvas {
 
     onSampleValueChanged: if (autoSample) addSample(sampleValue)
     onSamplesChanged: requestPaint()
+    onEffMaxChanged: requestPaint()
     Component.onCompleted: if (autoSample) addSample(sampleValue)
 
     function addSample(value) {
@@ -48,9 +51,8 @@ Canvas {
             numeric = 0;
         }
 
-        var ceiling = Math.max(1, spark.effMax);
         var next = samples.slice(0);
-        next.push(Math.max(0, Math.min(ceiling, numeric)));
+        next.push(Math.max(0, numeric));
         while (next.length > sampleLimit) {
             next.shift();
         }
@@ -130,16 +132,9 @@ Canvas {
             }
         }
 
-        // Smooth the series with quadratic midpoints, then fade the fill
-        // through a vertical gradient. Points run oldest (left) to newest
-        // (right).
-        //
-        // Display smoothing: a centered moving average tames one-sample
-        // traffic bursts into rounded hills (the stored series itself is
-        // untouched). Cheap: a few reads per point per paint.
-        var series = smoothed();
-            // NOTE: use `spark`, never `root` — `root` leaks in from
-            // main.qml (the PlasmoidItem) and carries no smoothing.
+        // Smoothed series: centered moving average tames one-sample
+        // bursts into rounded hills (the stored series is untouched).
+        function smoothed() {
             var r = Math.max(1, Math.min(6, spark.smoothing >> 1) | 0);
             var out = new Array(samples.length);
             for (var i = 0; i < samples.length; i++) {
@@ -154,24 +149,23 @@ Canvas {
             return out;
         }
 
+        var series = smoothed();
+
+        // Curve through the smoothed values with quadratic midpoints.
+        // Every point is HARD-CLAMPED to the plot — a spike that lands
+        // before the eased scale catches up can never escape the frame.
         function trace() {
-            var series = smoothed();
             ctx.beginPath();
             for (var i = 0; i < series.length; i++) {
                 var x = plotLeft + plotWidth - (series.length - 1 - i) * step;
-                // Normalize against the eased scale and HARD-CLAMP to the
-                // plot: a spike that lands before the scale catches up can
-                // never push the curve or fill out of the frame.
                 var t = Math.max(0, Math.min(ceiling, series[i])) / ceiling;
-                var y = plotTop + 1
-                      + (plotHeight - 2) * (1 - Math.min(1, t));
+                var y = plotTop + 1 + (plotHeight - 2) * (1 - t);
                 if (i === 0) {
                     ctx.moveTo(x, y);
                 } else if (i < series.length - 1) {
                     var nx = plotLeft + plotWidth - (series.length - 2 - i) * step;
-                    var ny = plotTop + 1
-                           + (plotHeight - 2) * (1 - Math.min(1, series[i + 1] / ceiling));
-                    ny = Math.max(plotTop + 1, Math.min(plotTop + plotHeight - 1, ny));
+                    var nt = Math.max(0, Math.min(ceiling, series[i + 1])) / ceiling;
+                    var ny = plotTop + 1 + (plotHeight - 2) * (1 - nt);
                     ctx.quadraticCurveTo(x, y, (x + nx) / 2, (y + ny) / 2);
                 } else {
                     ctx.lineTo(x, y);
@@ -210,16 +204,16 @@ Canvas {
         // Current-value dot at the newest sample — the macOS graph
         // signature: a glowing core over a soft halo.
         var endX = plotLeft + plotWidth - 2;
-        var endY = plotTop + 1
-                 + (plotHeight - 2) * (1 - Math.min(1, series[series.length - 1] / ceiling));
+        var endT = Math.max(0, Math.min(ceiling, series[series.length - 1])) / ceiling;
+        var endY = plotTop + 1 + (plotHeight - 2) * (1 - endT);
         ctx.globalAlpha = 0.30;
         ctx.fillStyle = lineColor;
         ctx.beginPath();
-        ctx.arc(endX - 1, endY, 5, 0, 2 * Math.PI);
+        ctx.arc(endX, endY, 5, 0, 2 * Math.PI);
         ctx.fill();
         ctx.globalAlpha = 1;
         ctx.beginPath();
-        ctx.arc(endX - 1, endY, 2.6, 0, 2 * Math.PI);
+        ctx.arc(endX, endY, 2.6, 0, 2 * Math.PI);
         ctx.fill();
     }
 }

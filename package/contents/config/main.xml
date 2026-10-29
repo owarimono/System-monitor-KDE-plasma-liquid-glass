@@ -100,6 +100,10 @@
     </entry>
 
     <!-- Appearance -->
+    <entry name="miniMode" type="Bool">
+      <label>Start in mini mode (compact card with percentages only; click expands).</label>
+      <default>false</default>
+    </entry>
     <entry name="cornerRadius" type="Int">
       <label>Corner radius of the widget silhouette in pixels.</label>
       <min>8</min>

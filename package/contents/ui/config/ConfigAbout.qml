@@ -11,7 +11,7 @@ ColumnLayout {
         // sync with it here.
         return {
             name: "System Monitor (Glass)",
-            version: "0.4.0",
+            version: "0.5.0",
             website: "https://github.com/owarimono/system-monitor-kde",
             license: "GPL-3.0"
         }
