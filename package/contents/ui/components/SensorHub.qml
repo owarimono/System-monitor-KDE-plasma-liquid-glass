@@ -133,6 +133,12 @@ Item {
         updateRateLimit: hub.updateInterval
     }
 
+    // ── GPU aggregate (for the mini-mode percentage row) ──────────────
+    readonly property var gpuAllUsage: Sensors.Sensor {
+        sensorId: "gpu/all/usage"
+        updateRateLimit: hub.updateInterval
+    }
+
     // ── GPUs (auto-probed; machines may have several) ─────────────────
     // ksystemstats exposes gpu/gpuN/* per adapter with no count sensor, so
     // slots 0..7 are probed and the Ready ones are listed.

@@ -382,9 +382,29 @@ Item {
                         Layout.fillWidth: true
                     }
 
+                    // Live value resolved per key — reactive to sensor
+                    // updates (a string snapshot would freeze here).
                     Text {
-                        text: modelData.value
-                        color: modelData.valueColor
+                        text: {
+                            const k = modelData.key
+                            if (k === "cpu")
+                                return view.pct(hub.num(hub.cpuUsage.value))
+                            if (k === "memory")
+                                return view.pct(hub.memLevel * 100)
+                            if (k === "disk")
+                                return view.pct(hub.num(hub.diskUsedPercent.value))
+                            if (k === "gpu")
+                                return view.pct(hub.gpus.length > 0 ? hub.num(hub.gpus[0].usage.value) : 0)
+                            if (k === "battery")
+                                return hub.batteryPercent + "%"
+                            return ""
+                        }
+                        color: {
+                            const k = modelData.key
+                            if (k === "disk")
+                                return colors.levelColor(hub.num(hub.diskUsedPercent.value) / 100)
+                            return colors.foreground
+                        }
                         font.family: view.monoFamily
                         font.pixelSize: 13
                         font.weight: Font.SemiBold
@@ -407,28 +427,21 @@ Item {
         return Math.max(0, Math.min(100, Math.round(v))) + "%"
     }
 
-    // Mini rows: percentages of the enabled sections (network has no
-    // percentage — excluded by design).
+    // Mini rows: key-addressed; values resolve LIVE in the delegate
+    // (string snapshots would freeze at build time). Network is excluded
+    // (rates, not percentages).
     readonly property var miniRows: {
         var rows = []
         if (cfg.showCpu)
-            rows.push({ label: i18n("CPU"), icon: Qt.resolvedUrl("icons/sf/cpu.svg"),
-                        value: pct(hub.num(hub.cpuUsage.value)), valueColor: colors.foreground })
+            rows.push({ key: "cpu", label: i18n("CPU"), icon: Qt.resolvedUrl("icons/sf/cpu.svg") })
         if (cfg.showMemory)
-            rows.push({ label: i18n("RAM"), icon: Qt.resolvedUrl("icons/sf/memory.svg"),
-                        value: pct(hub.memLevel * 100), valueColor: colors.foreground })
+            rows.push({ key: "memory", label: i18n("RAM"), icon: Qt.resolvedUrl("icons/sf/memory.svg") })
         if (cfg.showDisk)
-            rows.push({ label: i18n("Disk"), icon: Qt.resolvedUrl("icons/sf/disk.svg"),
-                        value: pct(hub.num(hub.diskUsedPercent.value)),
-                        valueColor: colors.levelColor(hub.num(hub.diskUsedPercent.value) / 100) })
+            rows.push({ key: "disk", label: i18n("Disk"), icon: Qt.resolvedUrl("icons/sf/disk.svg") })
         if (cfg.showGpu && hub.gpus.length > 0)
-            rows.push({ label: i18n("GPU"), icon: Qt.resolvedUrl("icons/sf/gpu.svg"),
-                        value: pct(hub.num(hub.gpus[0].usage.value)),
-                        valueColor: colors.foreground })
+            rows.push({ key: "gpu", label: i18n("GPU"), icon: Qt.resolvedUrl("icons/sf/gpu.svg") })
         if (cfg.showBattery && hub.hasBattery)
-            rows.push({ label: i18n("Battery"), icon: Qt.resolvedUrl("icons/sf/battery.svg"),
-                        value: hub.batteryPercent + "%",
-                        valueColor: view.batteryColor(hub.batteryPercent / 100, hub.batteryState) })
+            rows.push({ key: "battery", label: i18n("Battery"), icon: Qt.resolvedUrl("icons/sf/battery.svg") })
         return rows
     }
 
