@@ -253,7 +253,11 @@ Item {
                         spacing: 3
 
                         Text {
-                            text: String(hub.hostname.value ?? "…")
+                            // Display-level capitalization of the hostname.
+                            text: {
+                                var h = String(hub.hostname.value ?? "")
+                                return h.length > 0 ? h.charAt(0).toUpperCase() + h.slice(1) : "…"
+                            }
                             color: colors.foreground
                             font.family: "Inter"
                             font.pixelSize: 23
